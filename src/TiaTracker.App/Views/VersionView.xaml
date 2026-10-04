@@ -1,0 +1,165 @@
+<UserControl x:Class="TiaTracker.App.Views.VersionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="clr-namespace:TiaTracker.App.Views"
+             xmlns:ui="clr-namespace:TiaTracker.App.Controls">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Margin="0,0,0,12">
+            <StackPanel>
+                <DockPanel>
+                    <ToggleButton DockPanel.Dock="Right" IsChecked="{Binding HeaderExpanded}" Content="Dettagli" VerticalAlignment="Center"
+                                  Padding="10,3" ToolTip="Mostra o nasconde i dati della versione" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Title}" FontSize="22" FontWeight="SemiBold" Margin="0,0,12,0" />
+                        <ItemsControl ItemsSource="{Binding Chips}" ItemTemplate="{StaticResource ChipTemplate}" VerticalAlignment="Center">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </StackPanel>
+                </DockPanel>
+
+                <WrapPanel Margin="0,10,0,0">
+                    <Button Click="OnStateMenu" Margin="0,0,6,6" ToolTip="{Binding StateHint}" AutomationProperties.Name="Stato della versione">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="10" Height="10" Margin="0,0,8,0" VerticalAlignment="Center"
+                                     Fill="{Binding StateChip, Converter={StaticResource StateBrush}, ConverterParameter=Solid}" />
+                            <TextBlock Text="{Binding StateText}" VerticalAlignment="Center" />
+                            <TextBlock Text="&#xE70D;" FontFamily="{StaticResource IconFont}" FontSize="10" Margin="10,1,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Content="Apri in TIA" Command="{Binding OpenInTiaCommand}" Style="{StaticResource AccentButton}" Margin="0,0,6,6"
+                            ui:Ui.Glyph="{StaticResource Icon.Play}" ToolTip="Apre il progetto con TIA Portal" />
+                    <Button Content="Nuova versione da questa..." Command="{Binding NewVersionFromCommand}" Margin="0,0,6,6"
+                            ui:Ui.Glyph="{StaticResource Icon.Add}"
+                            ToolTip="Copia la cartella con un nome nuovo (versione successiva o duplicato)" />
+                    <Button Content="Backup .rar su rete" Command="{Binding BackupRarCommand}" Margin="0,0,6,6"
+                            ui:Ui.Glyph="{StaticResource Icon.Archive}"
+                            ToolTip="Comprime la cartella progetto nella cartella di rete della commessa" />
+                    <Button Content="Apri cartella" Command="{Binding OpenFolderCommand}" Margin="0,0,18,6" ui:Ui.Glyph="{StaticResource Icon.Folder}" />
+                    <Button Content="Elimina..." Command="{Binding DeleteVersionCommand}" Style="{StaticResource DangerButton}" Margin="0,0,6,6"
+                            ui:Ui.Glyph="{StaticResource Icon.Delete}"
+                            ToolTip="Sposta la cartella nel Cestino; la versione resta in TiaTracker con la sua storia" />
+                </WrapPanel>
+
+                <StackPanel Visibility="{Binding HeaderExpanded, Converter={StaticResource BoolToVis}}">
+                    <Grid Margin="0,6,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Progetto" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Version.ProjectName}" Style="{StaticResource FieldValue}" />
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="TIA" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding TiaText}" Style="{StaticResource FieldValue}" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Cartella" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource FieldValue}">
+                            <Hyperlink Command="{Binding OpenFolderCommand}">
+                                <Run Text="{Binding FolderFull, Mode=OneWay, TargetNullValue='(nessuna cartella: solo archivio)'}" />
+                            </Hyperlink>
+                        </TextBlock>
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="Ultimo salvataggio" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding LastSavedText}" Style="{StaticResource FieldValue}" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Archivi" Style="{StaticResource FieldLabel}" />
+                        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal">
+                            <TextBlock Text="{Binding BackupText}" Style="{StaticResource FieldValue}" Margin="0,4,12,4" />
+                            <TextBlock Style="{StaticResource FieldValue}" Visibility="{Binding RarFull, Converter={StaticResource NullToVis}}">
+                                <Hyperlink Command="{Binding OpenFolderCommand}" CommandParameter="{Binding RarFull}">rar</Hyperlink>
+                            </TextBlock>
+                        </StackPanel>
+                        <TextBlock Grid.Row="2" Grid.Column="2" Text="Stato" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding OpenText}" Style="{StaticResource FieldValue}" />
+                    </Grid>
+
+                    <TextBlock Text="{Binding LoadedText}" Margin="0,8,0,0" FontWeight="SemiBold"
+                               ToolTip="Stato e PLC si cambiano dal pulsante dello stato o con il tasto destro sulla versione" />
+
+                    <DockPanel Margin="0,8,0,0">
+                        <Button DockPanel.Dock="Right" Content="Salva nota" Command="{Binding SaveNoteCommand}" Margin="6,0,0,0" VerticalAlignment="Top" />
+                        <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap"
+                                 MaxHeight="80" VerticalScrollBarVisibility="Auto" ToolTip="Nota libera sulla versione" />
+                    </DockPanel>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <TabControl SelectedIndex="{Binding SelectedTab}">
+            <TabItem Header="Modifiche">
+                <DockPanel Margin="0,8,0,0">
+                    <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                        <Button Content="Associa modifiche..." Command="{Binding AddExistingChangeCommand}" Margin="0,0,6,6"
+                                ui:Ui.Glyph="{StaticResource Icon.Link}"
+                                ToolTip="Modifiche gia' registrate nella commessa: la stessa modifica puo' stare su piu' versioni" />
+                        <Button Content="Apri" Command="{Binding OpenChangeCommand}" Margin="0,0,6,6"
+                                ToolTip="Lettura della modifica; si scelgono le versioni su cui va e lo stato su ciascuna" />
+                        <Button Content="Togli da questa versione" Command="{Binding RemoveChangeCommand}" Margin="0,0,18,6" />
+                        <Button Content="Gestisci nella commessa" Command="{Binding ManageChangesCommand}" Margin="0,0,6,6"
+                                ToolTip="Scheda Modifiche della commessa: qui si creano, si correggono e si eliminano le modifiche" />
+                    </WrapPanel>
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource MutedText}" Margin="0,0,0,8"
+                               Text="Le modifiche si creano e si scrivono nella commessa. Da qui si associano a questa versione (anche a piu' versioni) e se ne segna lo stato fino al completamento." />
+                    <DataGrid ItemsSource="{Binding Changes}" SelectedItem="{Binding SelectedChange}" AutoGenerateColumns="False"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionMode="Single"
+                              CanUserAddRows="False" CanUserDeleteRows="False">
+                        <DataGrid.InputBindings>
+                            <MouseBinding Gesture="LeftDoubleClick" Command="{Binding OpenChangeCommand}" />
+                        </DataGrid.InputBindings>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Data" Binding="{Binding DateText}" Width="90" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Titolo" Binding="{Binding Title}" Width="2*" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Ambito" Binding="{Binding Scope}" Width="70" IsReadOnly="True" />
+                            <DataGridTemplateColumn Header="Stato" Width="150">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox ItemsSource="{Binding DataContext.StateOptions, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                  SelectedItem="{Binding Option, UpdateSourceTrigger=PropertyChanged}"
+                                                  Background="{Binding Option.Text, Converter={StaticResource StateBrush}}"
+                                                  BorderThickness="0" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Dettaglio stato" Binding="{Binding StateText}" Width="1.3*" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Blocchi" Binding="{Binding Blocks}" Width="2*" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Nota" Binding="{Binding Note}" Width="*" IsReadOnly="True" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+
+            <TabItem Header="Blocchi">
+                <v:BlocksView DataContext="{Binding Blocks}" Margin="0,8,0,0" />
+            </TabItem>
+
+            <TabItem Header="Snapshot">
+                <v:SnapshotsView DataContext="{Binding Snapshots}" Margin="0,8,0,0" />
+            </TabItem>
+
+            <TabItem Header="Confronta">
+                <v:CompareView DataContext="{Binding Compare}" Margin="0,8,0,0" />
+            </TabItem>
+
+            <TabItem Header="Storico">
+                <DataGrid ItemsSource="{Binding Events}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
+                          GridLinesVisibility="Horizontal" Margin="0,8,0,0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Quando" Binding="{Binding Utc, Converter={StaticResource UtcToLocal}}" Width="140" />
+                        <DataGridTextColumn Header="Evento" Binding="{Binding Kind}" Width="140" />
+                        <DataGridTextColumn Header="Dettaglio" Binding="{Binding Detail}" Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</UserControl>

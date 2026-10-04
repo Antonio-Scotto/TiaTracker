@@ -1,0 +1,80 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>TiaTracker.App</RootNamespace>
+    <AssemblyName>TiaTracker</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\TiaTracker.ico</ApplicationIcon>
+    <!-- ThemeMode (tema Fluent nativo) e' ancora marcato sperimentale. -->
+    <NoWarn>$(NoWarn);WPF0001</NoWarn>
+  </PropertyGroup>
+  <!-- WPF toglie System.IO dagli using impliciti (conflitto con Shapes.Path). -->
+  <ItemGroup>
+    <Using Include="System.IO" />
+  </ItemGroup>
+
+  <!-- Icona dell'exe e delle finestre (generata da tools\make-icon.py). -->
+  <ItemGroup>
+    <Resource Include="Assets\TiaTracker.ico" />
+    <Resource Include="Assets\TiaTracker.png" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\TiaTracker.Contracts\TiaTracker.Contracts.csproj" />
+    <ProjectReference Include="..\TiaTracker.Core\TiaTracker.Core.csproj" />
+    <ProjectReference Include="..\TiaTracker.Data\TiaTracker.Data.csproj" />
+    <ProjectReference Include="..\TiaTracker.Export\TiaTracker.Export.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="DiffPlex" />
+    <PackageReference Include="SharpCompress" />
+  </ItemGroup>
+
+  <!--
+    Worker accanto all'exe, in worker\v21 e worker\v18, per ogni build e publish:
+    senza, l'app avviata da bin\...\win-x64 non trovava il worker ("Worker per TIA V21
+    non trovato"). I worker sono net48: il riferimento serve solo a compilarli prima
+    (niente assembly referenziato) e c'e' solo se le DLL Openness sono installate,
+    cosi' su un PC senza TIA l'app compila lo stesso.
+  -->
+  <PropertyGroup>
+    <WorkerV21Out>$(MSBuildThisFileDirectory)..\TiaTracker.Worker.V21\bin\$(Configuration)\</WorkerV21Out>
+    <WorkerV18Out>$(MSBuildThisFileDirectory)..\TiaTracker.Worker.V18\bin\$(Configuration)\</WorkerV18Out>
+    <WorkerGlobalsToRemove>TargetFramework;RuntimeIdentifier;SelfContained;PublishReadyToRun;PublishSingleFile;PublishTrimmed;_IsPublishing;PublishDir</WorkerGlobalsToRemove>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TiaTracker.Worker.V21\TiaTracker.Worker.V21.csproj"
+                      Condition="Exists('$(TiaPublicApi)\Siemens.Engineering.Base.dll')"
+                      ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false"
+                      GlobalPropertiesToRemove="$(WorkerGlobalsToRemove)" />
+    <ProjectReference Include="..\TiaTracker.Worker.V18\TiaTracker.Worker.V18.csproj"
+                      Condition="Exists('$(TiaPublicApiV18)\Siemens.Engineering.dll')"
+                      ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false"
+                      GlobalPropertiesToRemove="$(WorkerGlobalsToRemove)" />
+  </ItemGroup>
+
+  <Target Name="RaccogliWorker">
+    <ItemGroup>
+      <_WorkerFile Include="$(WorkerV21Out)*.exe;$(WorkerV21Out)*.dll;$(WorkerV21Out)*.config;$(WorkerV21Out)*.pdb" Sub="v21" />
+      <_WorkerFile Include="$(WorkerV18Out)*.exe;$(WorkerV18Out)*.dll;$(WorkerV18Out)*.config;$(WorkerV18Out)*.pdb" Sub="v18" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopiaWorker" AfterTargets="Build" DependsOnTargets="RaccogliWorker">
+    <Copy SourceFiles="@(_WorkerFile)" DestinationFolder="$(OutDir)worker\%(_WorkerFile.Sub)" SkipUnchangedFiles="true" />
+    <Warning Condition="!Exists('$(WorkerV21Out)tiatracker-worker-v21.exe')"
+             Text="Worker V21 non compilato ($(WorkerV21Out)): da questa build niente snapshot da TIA V21 (vedi Diagnostica)." />
+  </Target>
+
+  <Target Name="CopiaWorkerPublish" AfterTargets="Publish" DependsOnTargets="RaccogliWorker">
+    <Copy SourceFiles="@(_WorkerFile)" DestinationFolder="$(PublishDir)worker\%(_WorkerFile.Sub)" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

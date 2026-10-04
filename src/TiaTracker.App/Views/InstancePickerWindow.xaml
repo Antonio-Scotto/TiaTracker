@@ -1,0 +1,28 @@
+<Window x:Class="TiaTracker.App.Views.InstancePickerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Scegli l'istanza di TIA Portal" Width="760" Height="420" MinHeight="300"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <DockPanel Margin="16">
+        <TextBlock DockPanel.Dock="Top" x:Name="Message" TextWrapping="Wrap" Margin="0,0,0,10" />
+        <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Margin="0,0,0,10" Padding="10,6"
+                BorderBrush="{StaticResource WarningBrush}">
+            <TextBlock x:Name="Warning" TextWrapping="Wrap" Foreground="{StaticResource WarningBrush}" />
+        </Border>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button x:Name="OkButton" Content="Usa questa istanza" Click="OnOk" IsDefault="True" MinWidth="150" Margin="0,0,8,0"
+                    Style="{StaticResource AccentButton}" IsEnabled="False" />
+            <Button Content="Annulla" IsCancel="True" Width="100" />
+        </StackPanel>
+        <ListBox x:Name="List" SelectionChanged="OnSelection" MouseDoubleClick="OnDoubleClick">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="0,3">
+                        <TextBlock Text="{Binding Project}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding Info}" FontSize="11" Foreground="{StaticResource MutedBrush}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</Window>

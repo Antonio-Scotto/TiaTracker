@@ -1,0 +1,52 @@
+<UserControl x:Class="TiaTracker.App.Views.SnapshotsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <WrapPanel>
+                <Button Content="Da TIA aperto" Command="{Binding FromOpenCommand}" IsEnabled="{Binding CanFromOpen}" Margin="0,0,6,6"
+                        ToolTip="Attach all'istanza di TIA che ha aperto questa versione" />
+                <Button Content="Da file" Command="{Binding FromFileCommand}" IsEnabled="{Binding CanFromFile}" Margin="0,0,6,6"
+                        ToolTip="Copia della cartella aperta da TIA senza interfaccia (disabilitato se la versione e' aperta)" />
+                <Button Content="Da backup" Command="{Binding FromBackupCommand}" IsEnabled="{Binding CanFromBackup}" Margin="0,0,6,6"
+                        ToolTip="Ultimo zip della cartella .backup" />
+                <Button Content="Da rar" Command="{Binding FromRarCommand}" IsEnabled="{Binding CanFromRar}" Margin="0,0,6,6" />
+                <Button Content="Da cartella XML..." Command="{Binding FromExportFolderCommand}" Margin="0,0,18,6"
+                        ToolTip="Registra come snapshot un export XML gia' fatto (es. in _tia), senza aprire TIA" />
+                <Button Content="Elimina snapshot" Command="{Binding DeleteCommand}" Margin="0,0,6,6" />
+            </WrapPanel>
+            <TextBlock Text="{Binding Hint}" Opacity="0.65" TextWrapping="Wrap" />
+            <TextBlock Opacity="0.65" TextWrapping="Wrap" Margin="0,2,0,0"
+                       Text="Durante l'export non lavorare in TIA. Al primo uso TIA chiede di autorizzare l'accesso Openness: confermare la finestra in TIA." />
+        </StackPanel>
+        <DataGrid ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}" AutoGenerateColumns="False" IsReadOnly="True"
+                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Quando" Binding="{Binding When}" Width="130" />
+                <DataGridTextColumn Header="PLC" Binding="{Binding Plc}" Width="120" />
+                <DataGridTextColumn Header="Sorgente" Binding="{Binding Source}" Width="200" />
+                <DataGridTextColumn Header="Elementi" Binding="{Binding Items}" Width="120" />
+                <DataGridTemplateColumn Header="Progetto" Width="110">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Modified}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Modified}" Value="NON salvato">
+                                                <Setter Property="Foreground" Value="{StaticResource Tone.Orange.Fg}" />
+                                                <Setter Property="FontWeight" Value="SemiBold" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridCheckBoxColumn Header="Parziale" Binding="{Binding Partial, Mode=OneWay}" Width="70" />
+                <DataGridTextColumn Header="Tempi" Binding="{Binding Timings}" Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,202 @@
+TiaTracker - versioni e modifiche dei progetti TIA Portal
+=========================================================
+
+Cosa fa
+-------
+Tiene traccia, per ogni commessa, delle versioni del progetto TIA (cartelle,
+.rar, backup), del loro stato, di quale e' caricata su ogni PLC e di quali
+modifiche sono state fatte su ciascuna. Esporta il progetto da TIA (blocchi,
+hardware, rete e tag), confronta le versioni, produce i documenti della
+commessa (Lista IP, Lista hardware, Lista IO, registro modifiche, piano
+attivita') in DOCX, PDF e CSV e pianifica il lavoro con un Gantt.
+
+Requisiti sul PC
+----------------
+- Windows 10/11 a 64 bit. L'app non richiede .NET installato (e' inclusa).
+- Per gli snapshot da TIA: TIA Portal V21 (o V18 per il worker v18) con
+  l'opzione "TIA Openness" installata.
+- L'utente Windows deve essere nel gruppo locale "Siemens TIA Openness"
+  (Gestione computer > Utenti e gruppi locali). Dopo averlo aggiunto serve
+  un logout/login.
+- .NET Framework 4.8 per i worker (gia' presente in Windows 10/11).
+
+Installazione
+-------------
+1. Prima di estrarre lo zip: tasto destro > Proprieta' > "Sblocca". Senza,
+   Windows (SmartScreen) puo' bloccare i worker e TIA rifiuta l'accesso.
+2. Estrarre la cartella TiaTracker dove si vuole (non serve installare).
+   La sottocartella worker\ deve restare accanto a TiaTracker.exe.
+3. Avviare TiaTracker.exe. Se manca qualcosa (worker, DLL di TIA, gruppo
+   Openness) compare una barra rossa: "Diagnostica" (in alto a destra) dice
+   cosa manca e dove e' stato cercato.
+
+Nuova commessa
+--------------
+"Nuova commessa": si sceglie la cartella delle versioni e TiaTracker mostra
+subito le versioni trovate, riconosce quella aperta in TIA e propone codice e
+nome. Alla creazione, in automatico:
+  - la versione su cui si lavora diventa "In lavoro";
+  - viene creata la cartella TiaTrackerOut;
+  - export iniziale da TIA (dal TIA aperto, o dalla cartella, o dal backup):
+    blocchi, hardware, rete e tag, come base per confronti e documenti;
+  - la Lista IP si riempie dai dati di TIA e i documenti vanno in Elenchi\.
+Le cartelle vengono poi riscansionate da sole (all'avvio, ogni 10 minuti e
+tornando all'app): una versione nuova compare con una notifica e il pulsante
+"Imposta In lavoro" (la precedente In lavoro diventa Vecchia).
+
+Stati delle versioni (tasto destro)
+-----------------------------------
+Tasto destro su una versione (nell'albero, nella dashboard o "Stato" nella
+scheda della versione): In lavoro, Da caricare, In collaudo (FAT/SAT),
+Caricata, Vecchia, Archiviata, Scartata, Nessuno stato.
+"Caricata...": si indicano PLC, data e ora; la versione che era su quel PLC
+diventa Vecchia, e si puo' fare subito uno "snapshot di prova" dal TIA
+collegato. "Togli dal PLC..." chiude il carico. Senza stato, una versione
+superata da una piu' recente diventa Vecchia da sola.
+
+Modifiche
+---------
+Le modifiche del registro si creano, si correggono e si eliminano solo dalla
+commessa (scheda "Modifiche"). Una modifica puo' andare su piu' versioni,
+ognuna con il suo stato: Pianificata, Importata, Compilata, Salvata, Scartata.
+Tasto destro sulla commessa nell'albero: "Aggiungi modifica..." (salvata, si
+apre la scheda Modifiche con la modifica selezionata) e "Modifiche della
+commessa".
+Nella scheda "Modifiche" di una versione:
+- "Associa modifiche...": porta su questa versione modifiche gia' registrate;
+- "Apri" (o doppio clic): titolo, testi e blocchi si leggono soltanto; si
+  scelgono le versioni su cui va la modifica e lo stato su ciascuna;
+- lo stato si cambia anche dalla tabella, fino al completamento (Salvata);
+- "Gestisci nella commessa": apre la scheda Modifiche della commessa.
+Nel confronto di una versione "Assegna a modifica..." aggiunge un blocco non
+dichiarato a una modifica della commessa e, se serve, la associa alla versione.
+
+Primo snapshot
+--------------
+Al primo collegamento di un worker nuovo TIA Portal mostra la finestra
+"Openness access": confermare (meglio "Si' a tutti"). La richiesta ricompare
+a ogni nuova versione del worker. Se nessuno risponde entro 120 secondi lo
+snapshot si interrompe con un messaggio, senza danni.
+
+Durante lo snapshot non lavorare in TIA. Con il PLC online TIA non esporta:
+andare offline e riprovare (TiaTracker non lo fa mai da solo).
+Lo snapshot "dalla cartella" lavora sempre su una copia del progetto:
+l'originale non viene mai aperto. TIA accetta progetti solo in percorsi fino
+a 143 caratteri: se un nome e' molto lungo, accorciarlo.
+"Leggi hardware e rete" (menu della versione o dashboard) legge solo
+dispositivi, IP e tag: pochi secondi dal TIA aperto.
+
+Dashboard
+---------
+La prima scheda della commessa: versioni con il loro stato (tasto destro per
+cambiarlo), cosa c'e' su ogni PLC, la versione su cui si lavora (ultimo
+salvataggio, ultimo snapshot, aperta in TIA), il progetto TIA (CPU, firmware,
+IP, blocchi per tipo, dispositivi, segnali I/O), avanzamento del piano con un
+Gantt delle prossime settimane, modifiche da salvare, documenti e attivita'
+recenti. In alto le azioni piu' usate.
+
+Documenti (Elenchi)
+-------------------
+Scheda "Documenti": Lista IP, Lista hardware (stazioni, moduli, codici
+d'ordine, firmware, indirizzi), Lista IO (segnali per modulo), registro
+modifiche e piano attivita'. Stile neutro, A4 orizzontale, "Pagina X di Y".
+- Si sceglie la versione (di norma quella di riferimento) e il formato:
+  DOCX (modificabile in Word), PDF, CSV (per Excel) o tutti.
+- Nell'anteprima la colonna "Note" si scrive a mano e si possono aggiungere
+  righe (es. alimentatori, dispositivi di terzi): restano a ogni
+  rigenerazione da TIA.
+- Ogni documento dice se e' "Aggiornato" o "Da rigenerare" (e perche').
+- Dopo ogni export della versione di riferimento i documenti si rigenerano
+  da soli (si cambia nelle Impostazioni della commessa).
+- Se un file e' aperto in Word il nuovo si salva accanto con data e ora.
+- "File della commessa": la cartella Documenti\ (offerte, schemi, manuali):
+  si apre, si trascinano dentro i file.
+
+Pianificazione
+--------------
+Scheda "Pianificazione": attivita', milestone (FAT, SAT, consegna) e fasi,
+con assegnatario, priorita', ore stimate e a consuntivo, avanzamento e la
+versione del progetto su cui si fanno.
+- Dipendenze fine-inizio ("Collega al precedente" o nell'attivita'), con
+  ritardo in giorni lavorativi. Sabato, domenica e feste nazionali non
+  contano (il fine settimana si attiva nelle Impostazioni).
+- Nel Gantt si trascinano le barre per spostarle e i bordi per cambiare
+  inizio e fine; Ctrl+rotella cambia lo zoom. Se lo spostamento fa slittare
+  altre attivita' TiaTracker mostra cosa cambia e chiede il motivo.
+  "Annulla" (o Ctrl+Z) riporta indietro.
+- Sotto i giorni, una fascia con le versioni nuove e i caricamenti sui PLC
+  (verde = sul PLC ora); passando col mouse si legge il dettaglio.
+- "Storico tempistiche": ogni cambio di date con chi, quando, da, a e motivo.
+- Un'attivita' fatta su una versione senza modifiche collegate: TiaTracker
+  propone di registrarla nel registro modifiche.
+- "Esporta piano": piano attivita' con le variazioni delle date.
+
+Versioni sul disco
+------------------
+- "Apri in TIA": apre il progetto con TIA Portal.
+- "Nuova versione da questa...": copia la cartella con un nome nuovo (proposta:
+  la versione successiva, es. V0.71; si puo' scrivere qualunque nome per un
+  duplicato). Lock, TMP e Logs restano fuori; le modifiche gia' Salvate nella
+  versione di partenza possono passare alla nuova.
+- "Elimina...": la cartella va nel Cestino di Windows (si recupera). In
+  TiaTracker la versione resta con la sua storia, segnata "Mancante".
+- "Backup .rar su rete": comprime la cartella progetto (senza lock, TMP, Logs)
+  nella cartella di rete della commessa. Serve WinRAR (Rar.exe); se e' in un
+  percorso non standard indicarlo in settings.json ("RarPath").
+
+Cartella TiaTrackerOut
+----------------------
+Ogni commessa ha una cartella TiaTrackerOut (per default accanto alle
+versioni, si cambia nelle Impostazioni della commessa) con:
+  Snapshot\   export dei progetti (XML, SCL, manifest, hardware) per versione e data
+  Confronti\  report dei confronti con la riconciliazione
+  Modifiche\  registro delle modifiche (.md e .csv)
+  Rete\       layout IP (.md e .csv)
+  Elenchi\    documenti generati (DOCX, PDF, CSV); altre versioni in Elenchi\<versione>\
+  Documenti\  documenti liberi della commessa
+  TiaTracker\ commessa.json con i dati della commessa
+
+Rete / IP, TIA e PRONETA
+------------------------
+La scheda "Rete / IP" della commessa e' una tabella modificabile (si salva da
+sola). "Aggiorna da TIA" legge rete e indirizzi dal progetto: i campi di TIA
+restano allineati, posizione, MAC e note sono vostri; le righe che spariscono
+da TIA vengono segnate, mai cancellate. "Importa da PRONETA..." legge la
+topologia online salvata da PRONETA (CSV o XML): aggiunge i MAC, segnala gli
+IP diversi e i dispositivi presenti solo in rete.
+"Copia per Google Documenti" mette la tabella negli appunti: in Google
+Documenti si incolla come tabella, in Google Fogli una cella per colonna.
+"Incolla da Google Fogli" fa il contrario (con o senza riga d'intestazione).
+IP non validi o doppi sono segnati con "!".
+
+Dove stanno i dati
+------------------
+Per default in %LOCALAPPDATA%\TiaTracker (fuori da OneDrive e dal Desktop):
+  tiatracker.db   archivio
+  settings.json   impostazioni di questo PC
+  logs\           log giornalieri (anche quelli dei worker)
+  backup\         copie del DB, una al giorno, ultime 7
+  work\           cartelle di lavoro temporanee degli snapshot
+
+Altre possibilita':
+- variabile d'ambiente TIATRACKER_DATA = cartella dei dati;
+- file vuoto "portable.flag" accanto a TiaTracker.exe: i dati vanno nella
+  sottocartella data\ (tutto in una cartella, per esempio su una chiavetta).
+
+Portare i dati su un altro PC
+-----------------------------
+Copiare la cartella dei dati (o tiatracker.db) sul nuovo PC. Se le cartelle
+dei progetti hanno un altro percorso: commessa > Impostazioni > "Riaggancia
+cartella". I percorsi delle versioni sono relativi alla cartella di scansione.
+
+settings.json (facoltativo)
+---------------------------
+  "TiaPublicApiV21": cartella con Siemens.Engineering.Base.dll se TIA V21 e'
+                     installato in un percorso non standard ("TiaPublicApi"
+                     vale ancora come prima)
+  "TiaPublicApiV18": cartella con Siemens.Engineering.dll per TIA V18
+  "WorkerDir":       cartella dei worker se non sono in worker\
+  "AutoScanMinutes": scansione automatica ogni N minuti (0 = solo a mano;
+                     si cambia anche dalle Impostazioni di una commessa)
+  "KeepWorkFolders": true per conservare le cartelle di lavoro degli snapshot (diagnosi)
+  "RarPath":         Rar.exe se WinRAR non e' in Programmi

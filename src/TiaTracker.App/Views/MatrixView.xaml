@@ -1,0 +1,26 @@
+<UserControl x:Class="TiaTracker.App.Views.MatrixView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,6">
+            <CheckBox Content="Nascondi versioni vecchie" IsChecked="{Binding HideOld}" Margin="0,0,16,0" />
+            <TextBlock Opacity="0.6" VerticalAlignment="Center"
+                       Text="Righe = modifiche, colonne = versioni. Arancione = importata o compilata ma NON salvata." />
+        </StackPanel>
+        <DataGrid x:Name="Grid" ItemsSource="{Binding Rows}" AutoGenerateColumns="False" CanUserAddRows="False"
+                  CanUserDeleteRows="False" HeadersVisibility="Column" GridLinesVisibility="All" SelectionUnit="Cell"
+                  FrozenColumnCount="2" EnableRowVirtualization="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Data" Binding="{Binding DateText}" IsReadOnly="True" Width="85" />
+                <DataGridTemplateColumn Header="Modifica" IsReadOnly="True" Width="340">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Title}" ToolTip="{Binding Blocks}" TextTrimming="CharacterEllipsis"
+                                       VerticalAlignment="Center" Margin="4,0" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

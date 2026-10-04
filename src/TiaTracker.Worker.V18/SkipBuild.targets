@@ -1,0 +1,7 @@
+<Project>
+  <!-- Importato solo se manca Siemens.Engineering.dll V18: sostituisce Build con un avviso. -->
+  <Target Name="Build">
+    <Message Importance="high" Text="Worker V18 saltato: Siemens.Engineering.dll non trovato in '$(TiaPublicApiV18)'." />
+  </Target>
+  <Target Name="Rebuild" DependsOnTargets="Build" />
+</Project>

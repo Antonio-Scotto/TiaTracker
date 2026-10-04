@@ -1,0 +1,168 @@
+<UserControl x:Class="TiaTracker.App.Views.PlanningView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:TiaTracker.App.Controls"
+             IsVisibleChanged="OnVisibleChanged" PreviewKeyDown="OnPreviewKeyDown">
+    <DockPanel>
+        <!-- Comandi -->
+        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+            <Button Content="Nuova attivita'" Command="{Binding NewTaskCommand}" Style="{StaticResource AccentButton}" Margin="0,0,6,6"
+                    ui:Ui.Glyph="{StaticResource Icon.Add}" ToolTip="Dopo la riga selezionata, dentro la stessa fase" />
+            <Button Content="Milestone" Command="{Binding NewMilestoneCommand}" Margin="0,0,6,6" ui:Ui.Glyph="{StaticResource Icon.Flag}"
+                    ToolTip="Una scadenza (FAT, SAT, consegna...)" />
+            <Button Content="Fase" Command="{Binding NewPhaseCommand}" Margin="0,0,16,6" ui:Ui.Glyph="{StaticResource Icon.List}"
+                    ToolTip="Raggruppa attivita': date e avanzamento vengono dalle attivita' che contiene" />
+            <Button Content="Modifica" Command="{Binding EditCommand}" Margin="0,0,6,6" ui:Ui.Glyph="{StaticResource Icon.Edit}" ToolTip="Invio o doppio clic" />
+            <Button Content="Elimina" Command="{Binding DeleteCommand}" Style="{StaticResource DangerButton}" Margin="0,0,16,6"
+                    ui:Ui.Glyph="{StaticResource Icon.Delete}" />
+            <Button Command="{Binding IndentCommand}" Style="{StaticResource IconButton}" ToolTip="Dentro la fase sopra" Margin="0,0,2,6"
+                    AutomationProperties.Name="Indenta">
+                <TextBlock Text="{StaticResource Icon.Indent}" Style="{StaticResource IconText}" />
+            </Button>
+            <Button Command="{Binding OutdentCommand}" Style="{StaticResource IconButton}" ToolTip="Fuori dalla fase" Margin="0,0,2,6"
+                    AutomationProperties.Name="Rientra">
+                <TextBlock Text="{StaticResource Icon.Outdent}" Style="{StaticResource IconText}" />
+            </Button>
+            <Button Command="{Binding MoveUpCommand}" Style="{StaticResource IconButton}" ToolTip="Su" Margin="0,0,2,6" AutomationProperties.Name="Su">
+                <TextBlock Text="&#xE70E;" Style="{StaticResource IconText}" />
+            </Button>
+            <Button Command="{Binding MoveDownCommand}" Style="{StaticResource IconButton}" ToolTip="Giu'" Margin="0,0,8,6" AutomationProperties.Name="Giu">
+                <TextBlock Text="&#xE70D;" Style="{StaticResource IconText}" />
+            </Button>
+            <Button Content="Collega al precedente" Command="{Binding LinkToPreviousCommand}" Margin="0,0,16,6" ui:Ui.Glyph="{StaticResource Icon.Link}"
+                    ToolTip="L'attivita' selezionata comincia dopo la fine di quella sopra" />
+            <Button Content="Annulla" Command="{Binding UndoLastCommand}" Margin="0,0,16,6" ui:Ui.Glyph="{StaticResource Icon.Undo}"
+                    ToolTip="Annulla l'ultimo cambiamento (Ctrl+Z)" />
+            <Button Click="OnZoomOut" Style="{StaticResource IconButton}" ToolTip="Riduci (Ctrl+rotella)" Margin="0,0,2,6" AutomationProperties.Name="Riduci">
+                <TextBlock Text="{StaticResource Icon.ZoomOut}" Style="{StaticResource IconText}" />
+            </Button>
+            <Button Click="OnZoomIn" Style="{StaticResource IconButton}" ToolTip="Ingrandisci (Ctrl+rotella)" Margin="0,0,2,6" AutomationProperties.Name="Ingrandisci">
+                <TextBlock Text="{StaticResource Icon.ZoomIn}" Style="{StaticResource IconText}" />
+            </Button>
+            <Button Content="Oggi" Click="OnToday" Margin="0,0,16,6" ui:Ui.Glyph="{StaticResource Icon.Today}" />
+            <ToggleButton Content="Storico tempistiche" IsChecked="{Binding ShowHistory}" Margin="0,0,6,6" ui:Ui.Glyph="{StaticResource Icon.History}"
+                          ToolTip="Ogni cambio di date: quando, chi, da, a, motivo, cascata" />
+            <Button Content="Esporta piano..." Click="OnExport" Margin="0,0,6,6" ui:Ui.Glyph="{StaticResource Icon.Export}"
+                    ToolTip="Piano attivita' con le variazioni delle date, in DOCX, PDF e CSV (TiaTrackerOut\Elenchi)" />
+        </WrapPanel>
+
+        <!-- Riepilogo e filtri -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <TextBox Width="190" Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged, Delay=150}" Margin="0,0,6,0"
+                         ui:Ui.Placeholder="Cerca" AutomationProperties.Name="Cerca attivita" />
+                <ComboBox ItemsSource="{Binding StatusFilters}" SelectedItem="{Binding StatusFilter}" Width="120" Margin="0,0,6,0"
+                          AutomationProperties.Name="Filtro stato" />
+                <ComboBox ItemsSource="{Binding Assignees}" SelectedItem="{Binding AssigneeFilter}" Width="140" AutomationProperties.Name="Filtro assegnatario" />
+            </StackPanel>
+            <ContentControl Content="{Binding LateChip}" ContentTemplate="{StaticResource ChipTemplate}" Focusable="False" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding KpiText}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                       Margin="4,0,12,0" />
+        </DockPanel>
+
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding Status}" Foreground="{StaticResource MutedBrush}" Margin="0,6,0,0" />
+
+        <!-- Storico delle tempistiche -->
+        <Border DockPanel.Dock="Bottom" Style="{StaticResource Card}" Margin="0,8,0,0" Height="200" Padding="12,8"
+                Visibility="{Binding ShowHistory, Converter={StaticResource BoolToVis}}">
+            <DockPanel>
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                    <CheckBox DockPanel.Dock="Right" Content="Solo le date" IsChecked="{Binding OnlyDateHistory}" />
+                    <TextBlock Text="STORICO TEMPISTICHE" Style="{StaticResource SectionTitle}" Margin="0,4,0,0" />
+                </DockPanel>
+                <DataGrid ItemsSource="{Binding History}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" SelectionMode="Single"
+                          AutomationProperties.Name="Storico tempistiche">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Quando" Binding="{Binding When}" Width="110" ElementStyle="{StaticResource CellTextCentered}" />
+                        <DataGridTextColumn Header="Chi" Binding="{Binding User}" Width="90" ElementStyle="{StaticResource CellTextCentered}" />
+                        <DataGridTextColumn Header="Attivita'" Binding="{Binding Task}" Width="1.5*" ElementStyle="{StaticResource CellTextCentered}" />
+                        <DataGridTextColumn Header="Cosa" Binding="{Binding What}" Width="110" ElementStyle="{StaticResource CellTextCentered}" />
+                        <DataGridTextColumn Header="Da" Binding="{Binding From}" Width="*" ElementStyle="{StaticResource CellTextCentered}" />
+                        <DataGridTextColumn Header="A" Binding="{Binding To}" Width="*" ElementStyle="{StaticResource CellTextCentered}" />
+                        <DataGridTextColumn Header="Spost." Binding="{Binding Shift}" Width="70" ElementStyle="{StaticResource CellTextCentered}" />
+                        <DataGridTextColumn Header="Motivo" Binding="{Binding Reason}" Width="1.5*" ElementStyle="{StaticResource CellTextCentered}" />
+                        <DataGridTextColumn Header="Origine" Binding="{Binding Origin}" Width="100" ElementStyle="{StaticResource CellTextCentered}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Border>
+
+        <!-- Griglia e Gantt: stesse righe, stesso scorrimento verticale -->
+        <Border Style="{StaticResource Card}" Padding="0" ClipToBounds="True">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="560" MinWidth="260" />
+                    <ColumnDefinition Width="5" />
+                    <ColumnDefinition Width="*" MinWidth="200" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <DataGrid x:Name="Grid" ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}" AutoGenerateColumns="False" IsReadOnly="True"
+                          CanUserSortColumns="False" CanUserReorderColumns="False" SelectionMode="Single" HeadersVisibility="Column"
+                          RowHeight="{x:Static ui:GanttChart.RowHeight}" ColumnHeaderHeight="{x:Static ui:GanttChart.HeaderHeight}"
+                          HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"
+                          VirtualizingPanel.ScrollUnit="Pixel" EnableRowVirtualization="True" AlternatingRowBackground="Transparent"
+                          MouseDoubleClick="OnGridDoubleClick" AutomationProperties.Name="Attivita">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="Attivita'" Width="*" MinWidth="160">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="{Binding Indent}" VerticalAlignment="Center" ToolTip="{Binding ToolTip}">
+                                        <Button Width="22" Height="22" Padding="0" Margin="4,0,2,0" Background="Transparent" BorderThickness="0"
+                                                Command="{Binding DataContext.ToggleExpandCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}" Focusable="False"
+                                                Visibility="{Binding HasChildren, Converter={StaticResource BoolToVis}}">
+                                            <TextBlock Text="{Binding Glyph}" FontFamily="{StaticResource IconFont}" FontSize="10" />
+                                        </Button>
+                                        <TextBlock Text="{Binding Glyph}" FontFamily="{StaticResource IconFont}" FontSize="12" Margin="8,0,6,0"
+                                                   Foreground="{StaticResource Tone.Orange.Solid}" VerticalAlignment="Center"
+                                                   Visibility="{Binding Task.IsMilestone, Converter={StaticResource BoolToVis}}" />
+                                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="6,0,0,0">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsPhase}" Value="True">
+                                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Inizio" Binding="{Binding StartText}" Width="84" ElementStyle="{StaticResource CellTextCentered}" />
+                        <DataGridTextColumn Header="Fine" Binding="{Binding EndText}" Width="84" ElementStyle="{StaticResource CellTextCentered}" />
+                        <DataGridTextColumn Header="Durata" Binding="{Binding DurationText}" Width="66" ElementStyle="{StaticResource CellTextCentered}" />
+                        <DataGridTextColumn Header="%" Binding="{Binding ProgressText}" Width="46" ElementStyle="{StaticResource CellTextCentered}" />
+                        <DataGridTextColumn Header="Chi" Binding="{Binding Assignee}" Width="80" ElementStyle="{StaticResource CellTextCentered}" />
+                        <DataGridTemplateColumn Header="Stato" Width="96">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ContentControl Content="{Binding StatusChip}" ContentTemplate="{StaticResource ChipTemplate}" Focusable="False"
+                                                    VerticalAlignment="Center" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <GridSplitter Grid.Column="1" Grid.RowSpan="2" Width="5" HorizontalAlignment="Stretch" Background="{StaticResource GridLineBrush}"
+                              ResizeBehavior="PreviousAndNext" />
+
+                <ui:GanttChart x:Name="Chart" Grid.Column="2" Bars="{Binding Bars}" Links="{Binding Links}" Markers="{Binding Markers}"
+                               Calendar="{Binding Calendar}" SelectedId="{Binding SelectedId, Mode=OneWay}" AutomationProperties.Name="Gantt" />
+                <ScrollBar x:Name="HScroll" Grid.Row="1" Grid.Column="2" Orientation="Horizontal" Scroll="OnHScroll" />
+
+                <ContentControl Grid.ColumnSpan="3" Style="{StaticResource EmptyState}" ui:Ui.Glyph="{StaticResource Icon.Calendar}"
+                                Tag="Nessuna attivita' pianificata"
+                                Content="Con &quot;Nuova attivita'&quot;, &quot;Milestone&quot; e &quot;Fase&quot; si costruisce il piano; trascinando le barre nel Gantt si spostano le date, le dipendenze seguono."
+                                Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}" />
+            </Grid>
+        </Border>
+    </DockPanel>
+</UserControl>

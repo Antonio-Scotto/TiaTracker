@@ -1,0 +1,243 @@
+<UserControl x:Class="TiaTracker.App.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:TiaTracker.App.Controls"
+             IsVisibleChanged="OnVisibleChanged">
+    <UserControl.Resources>
+        <!-- Riga "etichetta ........ valore" delle card. -->
+        <DataTemplate x:Key="CountLine">
+            <DockPanel Margin="0,3">
+                <TextBlock DockPanel.Dock="Right" Text="{Binding Value}" FontWeight="SemiBold" TextAlignment="Right" Margin="12,0,0,0"
+                           TextTrimming="CharacterEllipsis" MaxWidth="260" />
+                <TextBlock Text="{Binding Label}" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" />
+            </DockPanel>
+        </DataTemplate>
+
+        <Style x:Key="LinkButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="0,0,8,10">
+            <!-- Azioni rapide -->
+            <WrapPanel Margin="0,0,0,10">
+                <Button Content="Snapshot da TIA" Command="{Binding SnapshotCommand}" Style="{StaticResource AccentButton}" Margin="0,0,6,6"
+                        ui:Ui.Glyph="{StaticResource Icon.Camera}" ToolTip="{Binding SnapshotHint}" />
+                <Button Content="Leggi hardware e rete" Command="{Binding ReadHardwareCommand}" Margin="0,0,6,6" ui:Ui.Glyph="{StaticResource Icon.Hardware}"
+                        ToolTip="Solo dispositivi, IP e tag (pochi secondi dal TIA aperto): aggiorna Lista IP e documenti" />
+                <Button Content="Nuova versione" Command="{Binding NewVersionCommand}" Margin="0,0,6,6" ui:Ui.Glyph="{StaticResource Icon.Add}"
+                        ToolTip="Copia della versione di lavoro con il numero successivo" />
+                <Button Content="Genera documenti" Command="{Binding GenerateDocumentsCommand}" Margin="0,0,6,6" ui:Ui.Glyph="{StaticResource Icon.Document}" />
+                <Button Content="Nuova attivita'" Command="{Binding NewTaskCommand}" Margin="0,0,6,6" ui:Ui.Glyph="{StaticResource Icon.Task}" />
+                <Button Content="Apri TiaTrackerOut" Command="{Binding OpenOutputCommand}" Margin="0,0,6,6" ui:Ui.Glyph="{StaticResource Icon.Folder}" />
+            </WrapPanel>
+
+            <!-- Versioni -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,12" Padding="14,10">
+                <StackPanel>
+                    <TextBlock Text="VERSIONI" Style="{StaticResource SectionTitle}" Margin="0,0,0,8"
+                               ToolTip="Tasto destro: stato e azioni. Doppio clic: apre la versione." />
+                    <ItemsControl ItemsSource="{Binding Versions}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource HoverCard}" Padding="10,6" Margin="0,0,8,8" MinWidth="96" Cursor="Hand"
+                                        MouseRightButtonUp="OnVersionRightClick" MouseLeftButtonDown="OnVersionClick" ToolTip="{Binding Version.ProjectName}">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Label}" FontWeight="SemiBold" FontSize="14" />
+                                        <ContentControl Content="{Binding MainChip}" ContentTemplate="{StaticResource ChipTemplate}" Focusable="False"
+                                                        HorizontalAlignment="Left" Margin="0,4,0,0" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- Sul PLC, in lavoro, progetto TIA -->
+            <Grid Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="SUL PLC" Style="{StaticResource SectionTitle}" />
+                        <TextBlock x:Name="NoLoads" Text="Nessuna versione segnata come caricata: tasto destro sulla versione, Caricata..."
+                                   Style="{StaticResource MutedText}" />
+                        <ItemsControl ItemsSource="{Binding Loads}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,2,0,10">
+                                        <DockPanel>
+                                            <TextBlock DockPanel.Dock="Right" Text="{Binding Version}" FontWeight="SemiBold" FontSize="16"
+                                                       Foreground="{StaticResource Tone.Success.Fg}" />
+                                            <TextBlock Text="{Binding Plc}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                        </DockPanel>
+                                        <TextBlock Text="{Binding When}" Style="{StaticResource MutedText}" FontSize="12" />
+                                        <ContentControl Content="{Binding Proof}" ContentTemplate="{StaticResource ChipTemplate}" Focusable="False"
+                                                        HorizontalAlignment="Left" Margin="0,4,0,0" />
+                                        <TextBlock Text="{Binding Note}" Style="{StaticResource MutedText}" FontSize="12" Margin="0,2,0,0"
+                                                   Visibility="{Binding Note, Converter={StaticResource NullToVis}}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="IN LAVORO" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="{Binding WorkTitle}" FontSize="16" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding WorkTitle}" />
+                        <ItemsControl ItemsSource="{Binding WorkChips}" Margin="0,6,0,6">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ChipTemplate}" Focusable="False" Margin="0,0,0,4" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <ItemsControl ItemsSource="{Binding WorkLines}" ItemTemplate="{StaticResource CountLine}" />
+                        <TextBlock Text="{Binding SnapshotHint}" Style="{StaticResource MutedText}" FontSize="12" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="4" Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="PROGETTO TIA" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="{Binding TiaTitle}" FontSize="16" FontWeight="SemiBold" />
+                        <ItemsControl ItemsSource="{Binding Cpus}" Margin="0,6,0,6">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,2">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="{Binding Detail}" Style="{StaticResource MutedText}" FontSize="12" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <ItemsControl ItemsSource="{Binding ProjectCounts}" Margin="0,4,0,6">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="4" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,6,0">
+                                        <TextBlock Text="{Binding Value}" FontSize="20" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding Label}" Style="{StaticResource MutedText}" FontSize="11.5" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <ItemsControl ItemsSource="{Binding Blocks}" ItemTemplate="{StaticResource CountLine}" />
+                        <TextBlock Text="{Binding ProjectHint}" Style="{StaticResource MutedText}" FontSize="12" Margin="0,6,0,0"
+                                   Visibility="{Binding ProjectHint, Converter={StaticResource NullToVis}}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Pianificazione, modifiche e documenti -->
+            <Grid Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Apri" Command="{Binding OpenTabCommand}" CommandParameter="pianificazione"
+                                    Style="{StaticResource LinkButton}" />
+                            <ContentControl DockPanel.Dock="Right" Content="{Binding PlanChip}" ContentTemplate="{StaticResource ChipTemplate}" Focusable="False"
+                                            Margin="0,0,8,0" />
+                            <TextBlock Text="PIANIFICAZIONE" Style="{StaticResource SectionTitle}" />
+                        </DockPanel>
+                        <StackPanel Visibility="{Binding HasPlan, Converter={StaticResource BoolToVis}}">
+                            <DockPanel Margin="0,0,0,8">
+                                <TextBlock DockPanel.Dock="Right" Margin="10,0,0,0" FontWeight="SemiBold">
+                                    <Run Text="{Binding PlanProgress, Mode=OneWay}" /><Run Text="%" />
+                                </TextBlock>
+                                <ProgressBar Value="{Binding PlanProgress, Mode=OneWay}" Maximum="100" Height="6" VerticalAlignment="Center" />
+                            </DockPanel>
+                            <ItemsControl ItemsSource="{Binding PlanLines}" ItemTemplate="{StaticResource CountLine}" Margin="0,0,0,8" />
+                            <Border BorderBrush="{StaticResource GridLineBrush}" BorderThickness="1" CornerRadius="6" ClipToBounds="True">
+                                <ui:GanttChart Height="{Binding GanttHeight}" Bars="{Binding Bars}" Links="{Binding Links}" Markers="{Binding Markers}"
+                                               Calendar="{Binding Calendar}" ReadOnly="True" DayWidth="14" AutomationProperties.Name="Gantt prossime settimane" />
+                            </Border>
+                        </StackPanel>
+                        <StackPanel Visibility="{Binding HasPlan, Converter={StaticResource InvBoolToVis}}">
+                            <TextBlock Style="{StaticResource MutedText}" Margin="0,0,0,8"
+                                       Text="Nessuna attivita' pianificata. Task, milestone (FAT, SAT, consegna) e fasi con le loro dipendenze si gestiscono nella scheda Pianificazione." />
+                            <Button Content="Nuova attivita'" Command="{Binding NewTaskCommand}" HorizontalAlignment="Left" ui:Ui.Glyph="{StaticResource Icon.Add}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource Card}">
+                    <StackPanel>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Apri" Command="{Binding OpenTabCommand}" CommandParameter="modifiche"
+                                    Style="{StaticResource LinkButton}" />
+                            <TextBlock Text="MODIFICHE" Style="{StaticResource SectionTitle}" />
+                        </DockPanel>
+                        <ItemsControl ItemsSource="{Binding ChangeLines}" ItemTemplate="{StaticResource CountLine}" Margin="0,0,0,12" />
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Apri" Command="{Binding OpenTabCommand}" CommandParameter="documenti"
+                                    Style="{StaticResource LinkButton}" />
+                            <TextBlock Text="DOCUMENTI" Style="{StaticResource SectionTitle}" />
+                        </DockPanel>
+                        <ItemsControl ItemsSource="{Binding DocLines}" ItemTemplate="{StaticResource CountLine}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Attivita' recenti -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="ATTIVITA' RECENTI" Style="{StaticResource SectionTitle}" />
+                    <ItemsControl ItemsSource="{Binding Activity}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,3">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="90" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="240" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding When}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" />
+                                    <ContentControl Grid.Column="1" Content="{Binding Chip}" ContentTemplate="{StaticResource ChipTemplate}" Focusable="False"
+                                                    HorizontalAlignment="Left" />
+                                    <TextBlock Grid.Column="2" Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                                               Margin="0,0,10,0" ToolTip="{Binding Title}" />
+                                    <TextBlock Grid.Column="3" Text="{Binding Detail}" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis"
+                                               VerticalAlignment="Center" ToolTip="{Binding Detail}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

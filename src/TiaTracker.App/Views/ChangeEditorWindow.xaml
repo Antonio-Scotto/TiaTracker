@@ -1,0 +1,135 @@
+﻿<Window x:Class="TiaTracker.App.Views.ChangeEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding WindowTitle}" Width="1000" Height="820" MinWidth="760" MinHeight="560"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        FocusManager.FocusedElement="{Binding ElementName=TitleBox}">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Border Background="{StaticResource Tone.Accent.Bg}" CornerRadius="6" Padding="12,8" Margin="0,0,0,12"
+                        Visibility="{Binding ContentReadOnly, Converter={StaticResource BoolToVis}}">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Left" Text="{StaticResource Icon.Info}" FontFamily="{StaticResource IconFont}" FontSize="14"
+                                   Foreground="{StaticResource Tone.Accent.Fg}" Margin="0,1,10,0" VerticalAlignment="Top" />
+                        <TextBlock Text="{Binding ReadOnlyHint}" TextWrapping="Wrap" Foreground="{StaticResource Tone.Accent.Fg}" />
+                    </DockPanel>
+                </Border>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Titolo" Style="{StaticResource FieldLabel}" />
+                    <TextBox x:Name="TitleBox" Grid.Column="1" Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" Margin="0,2" FontWeight="SemiBold"
+                             IsReadOnly="{Binding ContentReadOnly}" />
+
+                    <TextBlock Grid.Row="1" Text="Data / ambito" Style="{StaticResource FieldLabel}" />
+                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,2" IsEnabled="{Binding CanEditContent}">
+                        <DatePicker SelectedDate="{Binding Date}" Width="160" Margin="0,0,12,0" />
+                        <ComboBox ItemsSource="{Binding Scopes}" SelectedIndex="{Binding ScopeIndex}" Width="130" Margin="0,0,12,0" />
+                        <CheckBox Content="Bozza (da confermare)" IsChecked="{Binding Draft}" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBlock Grid.Row="2" Text="Descrizione" Style="{StaticResource FieldLabel}" VerticalAlignment="Top" />
+                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" Margin="0,2"
+                             IsReadOnly="{Binding ContentReadOnly}"
+                             AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" MaxHeight="220" VerticalScrollBarVisibility="Auto" />
+
+                    <TextBlock Grid.Row="3" Text="Motivazione" Style="{StaticResource FieldLabel}" VerticalAlignment="Top" />
+                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Motivation, UpdateSourceTrigger=PropertyChanged}" Margin="0,2"
+                             IsReadOnly="{Binding ContentReadOnly}"
+                             AcceptsReturn="True" TextWrapping="Wrap" MinHeight="50" MaxHeight="160" VerticalScrollBarVisibility="Auto" />
+
+                    <TextBlock Grid.Row="4" Text="Estratto" Style="{StaticResource FieldLabel}" VerticalAlignment="Top"
+                               Visibility="{Binding HasExcerpt, Converter={StaticResource BoolToVis}}" />
+                    <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Excerpt, Mode=OneWay}" IsReadOnly="True" Margin="0,2"
+                             TextWrapping="Wrap" MaxHeight="160" VerticalScrollBarVisibility="Auto" Opacity="0.8" FontFamily="Consolas"
+                             Visibility="{Binding HasExcerpt, Converter={StaticResource BoolToVis}}" />
+                </Grid>
+
+                <TextBlock Text="Blocchi toccati" Style="{StaticResource SectionTitle}" />
+                <DockPanel Margin="0,0,0,6" Visibility="{Binding CanEditContent, Converter={StaticResource BoolToVis}}">
+                    <Button DockPanel.Dock="Right" Content="Aggiungi" Command="{Binding AddBlocksCommand}" Margin="6,0,0,0" />
+                    <ComboBox IsEditable="True" ItemsSource="{Binding KnownNames}" Text="{Binding NewBlockText, UpdateSourceTrigger=PropertyChanged}"
+                              IsTextSearchEnabled="True" StaysOpenOnEdit="True"
+                              ToolTip="Nome di un blocco o UDT (suggeriti dall'ultimo snapshot). Si puo' incollare un elenco separato da virgole o a capo." />
+                </DockPanel>
+                <DataGrid ItemsSource="{Binding Blocks}" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column"
+                          GridLinesVisibility="Horizontal" MinHeight="80" MaxHeight="240" IsReadOnly="{Binding ContentReadOnly}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Blocco / UDT" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="2*" />
+                        <DataGridTemplateColumn Header="Azione" Width="140">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox ItemsSource="{Binding DataContext.Actions, RelativeSource={RelativeSource AncestorType=Window}}"
+                                              SelectedItem="{Binding Action, UpdateSourceTrigger=PropertyChanged}" BorderThickness="0"
+                                              IsEnabled="{Binding DataContext.CanEditContent, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Nota" Binding="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Width="2*" />
+                        <DataGridTemplateColumn Width="40">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="✕" Padding="6,0" ToolTip="Togli"
+                                            Visibility="{Binding DataContext.CanEditContent, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"
+                                            Command="{Binding DataContext.RemoveBlockCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <TextBlock Text="Stato per versione" Style="{StaticResource SectionTitle}" />
+                <TextBlock Opacity="0.65" TextWrapping="Wrap" Margin="0,0,0,6"
+                           Text="Spuntare le versioni su cui va (o e' andata) la modifica. Importata/Compilata senza Salvata = progetto NON salvato in TIA." />
+                <DataGrid ItemsSource="{Binding VersionRows}" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column"
+                          GridLinesVisibility="Horizontal" MaxHeight="320">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="" Width="40">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding Included, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Versione" Binding="{Binding Label}" IsReadOnly="True" Width="120" />
+                        <DataGridTemplateColumn Header="Stato" Width="150">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox ItemsSource="{Binding DataContext.StateOptions, RelativeSource={RelativeSource AncestorType=Window}}"
+                                              SelectedItem="{Binding Option, UpdateSourceTrigger=PropertyChanged}"
+                                              IsEnabled="{Binding Included}" BorderThickness="0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Errori" Binding="{Binding Errors, TargetNullValue='', UpdateSourceTrigger=LostFocus}" Width="70" />
+                        <DataGridTextColumn Header="Warning" Binding="{Binding Warnings, TargetNullValue='', UpdateSourceTrigger=LostFocus}" Width="80" />
+                        <DataGridTextColumn Header="Nota" Binding="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Content="Salva" Command="{Binding SaveCommand}" IsDefault="True" Width="110" Margin="0,0,8,0" />
+            <Button Content="Annulla" Command="{Binding CancelCommand}" IsCancel="True" Width="110" />
+        </StackPanel>
+    </Grid>
+</Window>

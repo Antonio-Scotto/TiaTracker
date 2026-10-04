@@ -1,0 +1,79 @@
+<UserControl x:Class="TiaTracker.App.Views.IpTableView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:TiaTracker.App.Controls">
+    <DockPanel>
+        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <Button Content="Aggiorna da TIA" Command="{Binding RefreshFromTiaCommand}" Style="{StaticResource AccentButton}" Margin="0,0,6,6"
+                    ui:Ui.Glyph="{StaticResource Icon.Scan}"
+                    ToolTip="Legge rete e indirizzi dal progetto TIA (versione di riferimento) e allinea la tabella: posizione, MAC e note restano" />
+            <Button Content="Importa da PRONETA..." Command="{Binding ImportFromPronetaCommand}" Margin="0,0,6,6" ui:Ui.Glyph="{StaticResource Icon.Network}"
+                    ToolTip="Dispositivi trovati in rete da PRONETA (topologia online CSV o XML): aggiunge i MAC e i dispositivi mancanti" />
+            <Button Content="Aggiungi riga" Command="{Binding AddCommand}" Margin="0,0,6,6" ui:Ui.Glyph="{StaticResource Icon.Add}"
+                    ToolTip="Nuova riga a mano sotto la selezionata, con lo stesso IP + 1" />
+            <Button Content="Togli riga" Command="{Binding RemoveCommand}" Style="{StaticResource DangerButton}" Margin="0,0,6,6"
+                    ui:Ui.Glyph="{StaticResource Icon.Delete}" />
+            <Button Content="Stacca da TIA" Command="{Binding DetachFromTiaCommand}" Margin="0,0,6,6" ui:Ui.Glyph="{StaticResource Icon.Link}"
+                    ToolTip="La riga selezionata diventa manuale: si modifica tutta e l'allineamento con TIA non la tocca piu'" />
+            <Button Content="Togli righe non piu' in TIA" Command="{Binding RemoveMissingCommand}" Margin="0,0,6,6"
+                    Visibility="{Binding HasMissing, Converter={StaticResource BoolToVis}}" />
+            <Button Content="Ordina per IP" Command="{Binding SortByIpCommand}" Margin="0,0,18,6" ui:Ui.Glyph="{StaticResource Icon.Filter}" />
+            <Button Content="Copia per Google Documenti" Command="{Binding CopyForGoogleCommand}" Margin="0,0,6,6"
+                    ui:Ui.Glyph="{StaticResource Icon.Copy}"
+                    ToolTip="Negli appunti come tabella: incollare in Google Documenti, Fogli o Excel" />
+            <Button Content="Incolla da Google Fogli" Command="{Binding PasteFromClipboardCommand}" Margin="0,0,18,6"
+                    ToolTip="Copiare le righe in Google Fogli (intestazione compresa, se c'e') e incollarle qui" />
+            <Button Content="Importa CSV..." Command="{Binding ImportCsvCommand}" Margin="0,0,6,6" ui:Ui.Glyph="{StaticResource Icon.Import}" />
+            <Button Content="Esporta CSV..." Command="{Binding ExportCsvCommand}" Margin="0,0,6,6" ui:Ui.Glyph="{StaticResource Icon.Export}" />
+        </WrapPanel>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding Status}" Foreground="{StaticResource MutedBrush}" Margin="0,6,0,0"
+                   ToolTip="Le modifiche si salvano da sole e aggiornano TiaTrackerOut\Rete" />
+        <DataGrid x:Name="Grid" ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}" AutoGenerateColumns="False" CanUserAddRows="False"
+                  CanUserDeleteRows="False" SelectionMode="Single" CanUserSortColumns="True" FrozenColumnCount="3"
+                  BeginningEdit="OnBeginningEdit">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Width="26" MinWidth="26" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="!" Foreground="{StaticResource DangerBrush}" FontWeight="Bold" HorizontalAlignment="Center"
+                                       ToolTip="{Binding Problem}" Visibility="{Binding Problem, Converter={StaticResource NullToVis}}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Fonte" Width="80" MinWidth="80" IsReadOnly="True" SortMemberPath="SourceText">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border CornerRadius="9" Padding="7,1" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="{Binding SourceTip}"
+                                    Visibility="{Binding SourceText, Converter={StaticResource NullToVis}}">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="{StaticResource Tone.Accent.Bg}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Source}" Value="proneta">
+                                                <Setter Property="Background" Value="{StaticResource Tone.Teal.Bg}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding TiaMissing}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource Tone.Danger.Bg}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock Text="{Binding SourceText}" FontSize="11" Foreground="{StaticResource TextBrush}" />
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn ElementStyle="{StaticResource CellTextCentered}" Header="Indirizzo IP" Binding="{Binding Ip, UpdateSourceTrigger=PropertyChanged}" Width="125" MinWidth="125" FontFamily="{StaticResource MonoFont}" FontSize="12.5" />
+                <DataGridTextColumn ElementStyle="{StaticResource CellTextCentered}" Header="Dispositivo" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="1.6*" MinWidth="210" />
+                <DataGridTextColumn ElementStyle="{StaticResource CellTextCentered}" Header="Tipo" Binding="{Binding Kind, UpdateSourceTrigger=PropertyChanged}" Width="*" MinWidth="150" />
+                <DataGridTextColumn ElementStyle="{StaticResource CellTextCentered}" Header="Rete" Binding="{Binding Network, UpdateSourceTrigger=PropertyChanged}" Width="90" MinWidth="90" />
+                <DataGridTextColumn ElementStyle="{StaticResource CellTextCentered}" Header="Subnet mask" Binding="{Binding Subnet, UpdateSourceTrigger=PropertyChanged}" Width="125" MinWidth="125" FontFamily="{StaticResource MonoFont}" FontSize="12.5" />
+                <DataGridTextColumn ElementStyle="{StaticResource CellTextCentered}" Header="Gateway" Binding="{Binding Gateway, UpdateSourceTrigger=PropertyChanged}" Width="115" MinWidth="115" FontFamily="{StaticResource MonoFont}" FontSize="12.5" />
+                <DataGridTextColumn ElementStyle="{StaticResource CellTextCentered}" Header="Nome PROFINET" Binding="{Binding ProfinetName, UpdateSourceTrigger=PropertyChanged}" Width="1.2*" MinWidth="190" />
+                <DataGridTextColumn ElementStyle="{StaticResource CellTextCentered}" Header="Posizione" Binding="{Binding Location, UpdateSourceTrigger=PropertyChanged}" Width="110" MinWidth="90" />
+                <DataGridTextColumn ElementStyle="{StaticResource CellTextCentered}" Header="MAC" Binding="{Binding Mac, UpdateSourceTrigger=PropertyChanged}" Width="135" MinWidth="135" FontFamily="{StaticResource MonoFont}" FontSize="12.5" />
+                <DataGridTextColumn ElementStyle="{StaticResource CellTextCentered}" Header="Note" Binding="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" Width="1.5*" MinWidth="160" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,60 @@
+<Window x:Class="TiaTracker.App.Views.ImportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding Title}" Width="1300" Height="820" MinWidth="900" MinHeight="500"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <DockPanel Margin="16">
+        <Expander DockPanel.Dock="Top" Header="Documenti letti (percorsi relativi alla cartella della commessa)" Margin="0,0,0,8">
+            <DockPanel Margin="0,6,0,0">
+                <StackPanel DockPanel.Dock="Right" Margin="8,0,0,0">
+                    <Button Content="Rileggi" Command="{Binding ScanCommand}" Margin="0,0,0,6" />
+                    <Button Content="Salva elenco" Command="{Binding SaveGlobsCommand}" />
+                </StackPanel>
+                <TextBox Text="{Binding Globs, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="110"
+                         FontFamily="Cascadia Mono, Consolas" VerticalScrollBarVisibility="Auto" />
+            </DockPanel>
+        </Expander>
+
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Content="Crea bozze dalle spuntate" Command="{Binding ImportCommand}" Width="200" Margin="0,0,8,0" />
+                <Button Content="Chiudi" IsCancel="True" Width="100" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Tutte" Command="{Binding SelectAllCommand}" Margin="0,0,6,0" />
+                <Button Content="Nessuna" Command="{Binding SelectNoneCommand}" Margin="0,0,12,0" />
+                <CheckBox Content="Mostra gia' importate" IsChecked="{Binding ShowImported}" VerticalAlignment="Center" />
+            </StackPanel>
+        </DockPanel>
+
+        <TextBlock DockPanel.Dock="Top" Text="{Binding Summary}" Opacity="0.7" TextWrapping="Wrap" Margin="0,0,0,6" />
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="2*" />
+            </Grid.ColumnDefinitions>
+            <DataGrid ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}" AutoGenerateColumns="False" CanUserAddRows="False"
+                      HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionMode="Single">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Width="36">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding Selected, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Data" Binding="{Binding Date}" IsReadOnly="True" Width="85" />
+                    <DataGridTextColumn Header="Titolo" Binding="{Binding Title}" IsReadOnly="True" Width="2*" />
+                    <DataGridTextColumn Header="Versioni" Binding="{Binding Versions}" IsReadOnly="True" Width="1.5*" />
+                    <DataGridTextColumn Header="Blocchi" Binding="{Binding Blocks}" IsReadOnly="True" Width="1.5*" />
+                    <DataGridTextColumn Header="Confidenza" Binding="{Binding Confidence}" IsReadOnly="True" Width="90" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="Transparent" />
+            <TextBox Grid.Column="2" Text="{Binding Selected.Detail, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top" AcceptsReturn="True" />
+        </Grid>
+    </DockPanel>
+</Window>

@@ -1,0 +1,213 @@
+<UserControl x:Class="TiaTracker.App.Views.CommessaView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="clr-namespace:TiaTracker.App.Views">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock FontSize="22" FontWeight="SemiBold">
+                    <Run Text="{Binding Code, Mode=OneWay}" />
+                    <Run Text="{Binding Name, Mode=OneWay}" />
+                </TextBlock>
+                <TextBlock Text="{Binding Stats}" Foreground="{StaticResource MutedBrush}" Margin="0,2,0,0" />
+            </StackPanel>
+        </Border>
+
+        <TabControl SelectedIndex="{Binding SelectedTab}">
+
+            <TabItem Header="Dashboard">
+                <v:DashboardView DataContext="{Binding Dashboard}" Margin="0,10,0,0" />
+            </TabItem>
+
+            <TabItem Header="Modifiche">
+                <DockPanel Margin="0,10,0,0">
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8" LastChildFill="False">
+                        <Button Content="Nuova modifica" Command="{Binding NewChangeCommand}" Margin="0,0,6,0" Style="{StaticResource AccentButton}" />
+                        <Button Content="Apri" Command="{Binding EditChangeCommand}" Margin="0,0,6,0" />
+                        <Button Content="Elimina" Command="{Binding DeleteChangeCommand}" Style="{StaticResource DangerButton}" Margin="0,0,16,0" />
+                        <TextBox Width="260" Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0"
+                                 ToolTip="Cerca in titolo, descrizione e blocchi" />
+                        <CheckBox Content="Bozze" IsChecked="{Binding ShowDrafts}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <CheckBox Content="Solo non salvate" IsChecked="{Binding OnlyNotSaved}" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <DataGrid ItemsSource="{Binding Changes}" SelectedItem="{Binding SelectedChange}" AutoGenerateColumns="False"
+                              IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionMode="Single">
+                        <DataGrid.InputBindings>
+                            <MouseBinding Gesture="LeftDoubleClick" Command="{Binding EditChangeCommand}" />
+                        </DataGrid.InputBindings>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Data" Binding="{Binding DateText}" Width="90" />
+                            <DataGridTemplateColumn Header="Titolo" Width="2*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Border Style="{StaticResource Chip}" Background="{Binding Source='Pianificata', Converter={StaticResource StateBrush}}"
+                                                    Visibility="{Binding Draft, Converter={StaticResource BoolToVis}}">
+                                                <TextBlock Text="bozza" FontSize="11" />
+                                            </Border>
+                                            <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Ambito" Binding="{Binding Scope}" Width="70" />
+                            <DataGridTextColumn Header="Blocchi" Binding="{Binding Blocks}" Width="2*" />
+                            <DataGridTemplateColumn Header="Versioni" Width="2*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding VersionsText}" TextTrimming="CharacterEllipsis">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding NotSaved}" Value="True">
+                                                            <Setter Property="Foreground" Value="{StaticResource WarningBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+
+            <TabItem Header="Matrice">
+                <v:MatrixView DataContext="{Binding Matrix}" Margin="0,10,0,0" />
+            </TabItem>
+
+            <TabItem Header="Documenti">
+                <v:DocumentsView DataContext="{Binding Docs}" Margin="0,10,0,0" />
+            </TabItem>
+
+            <TabItem Header="Pianificazione">
+                <v:PlanningView DataContext="{Binding Plan}" Margin="0,10,0,0" />
+            </TabItem>
+
+            <TabItem Header="Rete / IP">
+                <v:IpTableView DataContext="{Binding Ip}" Margin="0,10,0,0" />
+            </TabItem>
+
+            <TabItem Header="Impostazioni">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <WrapPanel Margin="0,10,0,0" Orientation="Horizontal">
+                        <Border Style="{StaticResource Card}" Width="560" Margin="0,0,12,12" VerticalAlignment="Top">
+                            <StackPanel>
+                                <TextBlock Text="DATI COMMESSA" Style="{StaticResource SectionTitle}" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="80" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Text="Codice" Style="{StaticResource FieldLabel}" />
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Code}" Style="{StaticResource FieldValue}" FontWeight="SemiBold" />
+                                    <TextBlock Grid.Row="1" Text="Nome" Style="{StaticResource FieldLabel}" />
+                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,2" />
+                                    <TextBlock Grid.Row="2" Text="Cliente" Style="{StaticResource FieldLabel}" />
+                                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Customer, UpdateSourceTrigger=PropertyChanged}" Margin="0,2" />
+                                    <TextBlock Grid.Row="3" Text="Note" Style="{StaticResource FieldLabel}" VerticalAlignment="Top" />
+                                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Margin="0,2"
+                                             AcceptsReturn="True" TextWrapping="Wrap" MinHeight="70" />
+                                </Grid>
+                                <Button Content="Salva commessa" Command="{Binding SaveCommessaCommand}" HorizontalAlignment="Right" Margin="0,10,0,0"
+                                        Style="{StaticResource AccentButton}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" Width="560" Margin="0,0,12,12" VerticalAlignment="Top">
+                            <StackPanel>
+                                <TextBlock Text="AUTOMAZIONI" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="Versione di riferimento" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,4" />
+                                <ComboBox ItemsSource="{Binding ReferenceChoices}" SelectedItem="{Binding ReferenceChoice}" Margin="0,0,0,4"
+                                          AutomationProperties.Name="Versione di riferimento" />
+                                <TextBlock Style="{StaticResource MutedText}" FontSize="12" Margin="0,0,0,10"
+                                           Text="Quella che allinea la Lista IP, scrive i documenti in Elenchi e compare nella dashboard." />
+                                <CheckBox IsChecked="{Binding AutoIpSync}" Margin="0,2"
+                                          Content="Lista IP allineata dopo ogni export della versione di riferimento" />
+                                <CheckBox IsChecked="{Binding AutoDocuments}" Margin="0,2"
+                                          Content="Documenti in Elenchi rigenerati dopo ogni export della versione di riferimento" />
+                                <CheckBox IsChecked="{Binding WorkOnWeekends}" Margin="0,2"
+                                          Content="Pianificazione: si lavora anche il sabato e la domenica" />
+                                <Separator Margin="0,10" />
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Right" Text="minuti (0 = solo a mano)" Style="{StaticResource FieldLabel}" Margin="8,0,0,0" />
+                                    <TextBox DockPanel.Dock="Right" Width="60" Text="{Binding AutoScanMinutes, UpdateSourceTrigger=LostFocus}"
+                                             AutomationProperties.Name="Minuti scansione automatica" />
+                                    <TextBlock Text="Scansione automatica delle cartelle ogni" Style="{StaticResource FieldLabel}"
+                                               ToolTip="Vale per tutte le commesse: nuove versioni e salvataggi in TIA si trovano da soli" />
+                                </DockPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" Width="1132" Margin="0,0,12,12" VerticalAlignment="Top">
+                            <StackPanel>
+                                <TextBlock Text="CARTELLE" Style="{StaticResource SectionTitle}" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Text="TiaTrackerOut" Style="{StaticResource FieldLabel}"
+                                               ToolTip="Export, report, registro modifiche, layout IP e documenti della commessa" />
+                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding OutputDir, UpdateSourceTrigger=LostFocus}" Margin="0,2"
+                                             ToolTip="Vuoto = TiaTrackerOut nella prima cartella di scansione" />
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" Margin="6,0,0,0">
+                                        <Button Content="Sfoglia..." Command="{Binding BrowseOutputCommand}" Margin="0,0,6,0" />
+                                        <Button Content="Apri" Command="{Binding OpenPathCommand}" CommandParameter="out" Margin="0,0,6,0" />
+                                        <Button Content="Aggiorna" Command="{Binding RefreshOutputCommand}"
+                                                ToolTip="Riscrive registro modifiche, layout IP e commessa.json" />
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Row="1" Text="Backup .rar (rete)" Style="{StaticResource FieldLabel}" />
+                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding BackupDir, UpdateSourceTrigger=LostFocus}" Margin="0,2"
+                                             ToolTip="Cartella di rete dove la versione viene salvata in .rar (es. \\server\progetti\Commessa)" />
+                                    <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" Margin="6,0,0,0">
+                                        <Button Content="Sfoglia..." Command="{Binding BrowseBackupCommand}" Margin="0,0,6,0" />
+                                        <Button Content="Apri" Command="{Binding OpenPathCommand}" CommandParameter="backup" />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Margin="190,2,0,10" Foreground="{StaticResource MutedBrush}" FontSize="11">
+                                    <Run Text="In uso:" />
+                                    <Run Text="{Binding OutputEffective, Mode=OneWay}" />
+                                </TextBlock>
+
+                                <TextBlock Text="CARTELLE DI SCANSIONE (VERSIONI)" Style="{StaticResource SectionTitle}" />
+                                <ListView ItemsSource="{Binding Roots}" SelectedItem="{Binding SelectedRoot}" MinHeight="50">
+                                    <ListView.View>
+                                        <GridView>
+                                            <GridViewColumn Header="Percorso" Width="620" DisplayMemberBinding="{Binding Path}" />
+                                            <GridViewColumn Header="Regex etichette" Width="180" DisplayMemberBinding="{Binding NameRegex}" />
+                                            <GridViewColumn Header="Ultima scansione" Width="150"
+                                                            DisplayMemberBinding="{Binding LastScanUtc, Converter={StaticResource UtcToLocal}}" />
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <Button Content="Aggiungi cartella" Command="{Binding AddRootCommand}" Margin="0,0,6,0" />
+                                    <Button Content="Riaggancia cartella" Command="{Binding RelinkRootCommand}" Margin="0,0,6,0"
+                                            ToolTip="La cartella e' stata spostata o si e' cambiato PC: indicare dove sta adesso" />
+                                    <Button Content="Regex etichette" Command="{Binding EditRegexCommand}" Margin="0,0,6,0" />
+                                    <Button Content="Scansiona" Command="{Binding Main.ScanCommand}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </WrapPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</UserControl>

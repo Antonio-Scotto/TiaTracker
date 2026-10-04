@@ -1,0 +1,47 @@
+<Project>
+
+  <!--
+    Worker per TIA Portal V15.1..V18: un solo Siemens.Engineering.dll.
+    Stessi sorgenti del worker V21 (TiaTracker.Worker.Common, #if TIA_V18).
+    Se la DLL V18 manca sul PC la build lo salta con un messaggio, senza errore:
+    l'Sdk e' importato a mano per poter sostituire il target Build dopo di lui.
+  -->
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <AssemblyName>tiatracker-worker-v18</AssemblyName>
+    <RootNamespace>TiaTracker.Worker</RootNamespace>
+    <DefineConstants>$(DefineConstants);TIA_V18</DefineConstants>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <!-- Override: dotnet build -p:TiaPublicApiV18="...\PublicAPI\V17" -->
+  <PropertyGroup>
+    <TiaPublicApiV18 Condition="'$(TiaPublicApiV18)' == ''">C:\Program Files\Siemens\Automation\Portal V18\PublicAPI\V18</TiaPublicApiV18>
+    <TiaV18Available Condition="Exists('$(TiaPublicApiV18)\Siemens.Engineering.dll')">true</TiaV18Available>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\TiaTracker.Worker.Common\**\*.cs" LinkBase="Common" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TiaTracker.Contracts\TiaTracker.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Siemens.Engineering">
+      <HintPath>$(TiaPublicApiV18)\Siemens.Engineering.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <Import Project="SkipBuild.targets" Condition="'$(TiaV18Available)' != 'true'" />
+
+</Project>

@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Condiviso fra l'app (net10) e i worker (net48): niente dipendenze esterne. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>TiaTracker.Contracts</RootNamespace>
+  </PropertyGroup>
+</Project>

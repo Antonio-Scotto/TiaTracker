@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Documenti neutri della commessa in DOCX (OpenXml), PDF (MigraDoc, build Core) e CSV. Niente UI, niente DB. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>TiaTracker.Export</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TiaTracker.Core\TiaTracker.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" />
+    <PackageReference Include="PDFsharp-MigraDoc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="TiaTracker.Core.Tests" />
+  </ItemGroup>
+</Project>

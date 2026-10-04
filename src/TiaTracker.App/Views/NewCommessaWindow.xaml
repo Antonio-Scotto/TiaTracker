@@ -1,0 +1,138 @@
+<Window x:Class="TiaTracker.App.Views.NewCommessaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:TiaTracker.App.Controls"
+        Title="Nuova commessa" Width="760" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Background="{StaticResource WindowBrush}">
+    <StackPanel Margin="20,16,20,18">
+        <TextBlock Text="Nuova commessa" Style="{StaticResource PageTitle}" />
+        <TextBlock Style="{StaticResource MutedText}" Margin="0,2,0,14"
+                   Text="Si sceglie la cartella delle versioni: TiaTracker le trova, imposta quella su cui si lavora e ne fa subito l'export da TIA come base per confronti e documenti." />
+
+        <!-- Cartella e versioni trovate -->
+        <Border Style="{StaticResource Card}" Margin="0,0,0,10">
+            <StackPanel>
+                <TextBlock Text="CARTELLA DELLE VERSIONI" Style="{StaticResource SectionTitle}" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Sfoglia..." Command="{Binding BrowseFolderCommand}" Margin="6,0,0,0"
+                            ui:Ui.Glyph="{StaticResource Icon.Folder}" />
+                    <TextBox Text="{Binding Folder, UpdateSourceTrigger=PropertyChanged}" ui:Ui.Placeholder="Percorso della cartella con i progetti TIA"
+                             AutomationProperties.Name="Cartella delle versioni" />
+                </DockPanel>
+                <DockPanel Margin="0,8,0,6">
+                    <ProgressBar DockPanel.Dock="Left" IsIndeterminate="True" Width="60" Height="3" Margin="0,0,8,0" VerticalAlignment="Center"
+                                 Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}" />
+                    <TextBlock Text="{Binding ScanText}" Style="{StaticResource MutedText}" />
+                </DockPanel>
+                <ListBox ItemsSource="{Binding Found}" SelectedItem="{Binding WorkVersion}" MaxHeight="190" Background="Transparent" BorderThickness="0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" AutomationProperties.Name="Versioni trovate"
+                         Visibility="{Binding Found.Count, Converter={StaticResource CountToVis}}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                            <Setter Property="Padding" Value="10,4" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <DockPanel>
+                                <ContentControl DockPanel.Dock="Right" Content="{Binding Chip}" ContentTemplate="{StaticResource ChipTemplate}" Focusable="False" />
+                                <TextBlock VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
+                                    <Run Text="{Binding Label, Mode=OneWay}" FontWeight="SemiBold" />
+                                    <Run Text="  " />
+                                    <Run Text="{Binding ProjectName, Mode=OneWay}" Foreground="{StaticResource MutedBrush}" />
+                                    <Run Text="  " />
+                                    <Run Text="{Binding Detail, Mode=OneWay}" Foreground="{StaticResource SubtleBrush}" FontSize="11.5" />
+                                </TextBlock>
+                            </DockPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </StackPanel>
+        </Border>
+
+        <!-- Dati della commessa -->
+        <Border Style="{StaticResource Card}" Margin="0,0,0,10">
+            <StackPanel>
+                <TextBlock Text="DATI" Style="{StaticResource SectionTitle}" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Codice" Style="{StaticResource FieldLabel}" />
+                    <TextBox Grid.Column="1" Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}" Margin="0,2" ui:Ui.Placeholder="es. AUT123456"
+                             AutomationProperties.Name="Codice" />
+                    <TextBlock Grid.Column="3" Text="Nome" Style="{StaticResource FieldLabel}" />
+                    <TextBox Grid.Column="4" Text="{Binding CommessaName, UpdateSourceTrigger=PropertyChanged}" Margin="0,2" ui:Ui.Placeholder="es. Linea 2"
+                             AutomationProperties.Name="Nome" />
+                    <TextBlock Grid.Row="1" Text="Cliente" Style="{StaticResource FieldLabel}" />
+                    <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" Text="{Binding Customer, UpdateSourceTrigger=PropertyChanged}" Margin="0,2"
+                             AutomationProperties.Name="Cliente" />
+                </Grid>
+
+                <Expander Header="Cartelle e opzioni avanzate" Margin="0,8,0,0">
+                    <Grid Margin="0,6,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="TiaTrackerOut" Style="{StaticResource FieldLabel}"
+                                   ToolTip="Export, documenti in Elenchi, registro modifiche, layout IP della commessa" />
+                        <TextBox Grid.Column="1" Text="{Binding OutputDir, UpdateSourceTrigger=PropertyChanged}" Margin="0,2"
+                                 ui:Ui.Placeholder="{Binding OutputHint}" AutomationProperties.Name="Cartella TiaTrackerOut" />
+                        <Button Grid.Column="2" Content="Sfoglia..." Command="{Binding BrowseOutputCommand}" Margin="6,0,0,0" />
+                        <TextBlock Grid.Row="1" Text="Backup .rar" Style="{StaticResource FieldLabel}" />
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding BackupDir, UpdateSourceTrigger=PropertyChanged}" Margin="0,2"
+                                 ui:Ui.Placeholder="Cartella di rete dove salvare le versioni in .rar (facoltativa)" AutomationProperties.Name="Cartella backup" />
+                        <Button Grid.Row="1" Grid.Column="2" Content="Sfoglia..." Command="{Binding BrowseBackupCommand}" Margin="6,0,0,0" />
+                        <TextBlock Grid.Row="2" Text="Regex etichette" Style="{StaticResource FieldLabel}" />
+                        <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding NameRegex, UpdateSourceTrigger=PropertyChanged}" Margin="0,2"
+                                 ui:Ui.Placeholder="Facoltativa: gruppi maj, min, tia, date, label" AutomationProperties.Name="Regex etichette" />
+                    </Grid>
+                </Expander>
+            </StackPanel>
+        </Border>
+
+        <!-- Automazioni -->
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="SUBITO DOPO LA CREAZIONE" Style="{StaticResource SectionTitle}" />
+                <DockPanel Margin="0,0,0,8">
+                    <ComboBox DockPanel.Dock="Right" ItemsSource="{Binding Found}" SelectedItem="{Binding WorkVersion}" MinWidth="170"
+                              DisplayMemberPath="Label" AutomationProperties.Name="Versione su cui si lavora" />
+                    <CheckBox IsChecked="{Binding SetInLavoro}" VerticalAlignment="Center" Content="Segna &quot;In lavoro&quot; la versione su cui si lavora" />
+                </DockPanel>
+                <CheckBox IsChecked="{Binding InitialExport}" IsEnabled="{Binding CanExport}"
+                          Content="Export iniziale da TIA: blocchi, hardware, rete e tag (baseline)" />
+                <TextBlock Text="{Binding ExportHint}" Style="{StaticResource MutedText}" FontSize="12" Margin="26,2,0,8" />
+                <CheckBox IsChecked="{Binding AutoDocuments}"
+                          Content="Documenti in TiaTrackerOut\Elenchi: Lista IP, hardware, IO e registro (DOCX, PDF, CSV)" />
+                <TextBlock Style="{StaticResource MutedText}" FontSize="12" Margin="26,2,0,0"
+                           Text="Generati dopo l'export e rigenerati a ogni nuovo export della versione di riferimento (si cambia nelle impostazioni della commessa)." />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="{Binding Error}" Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap" Margin="0,10,0,0"
+                   Visibility="{Binding Error, Converter={StaticResource NullToVis}}" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <Button Content="Crea commessa" Click="OnOk" IsDefault="True" MinWidth="150" Margin="0,0,8,0" Style="{StaticResource AccentButton}"
+                    ui:Ui.Glyph="{StaticResource Icon.Add}" />
+            <Button Content="Annulla" IsCancel="True" MinWidth="100" />
+        </StackPanel>
+    </StackPanel>
+</Window>
