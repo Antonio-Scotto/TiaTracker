@@ -1,11 +1,28 @@
 # TiaTracker
 
-Versioni e modifiche dei progetti TIA Portal: commesse > versioni > stato > modifiche,
-snapshot da TIA via Openness (blocchi, hardware, rete e tag), confronto con diff,
-riconciliazione con le modifiche dichiarate, documenti della commessa (Lista IP,
-hardware, IO, registro, piano) in DOCX/PDF/CSV, pianificazione con Gantt e una
-dashboard per commessa. Istruzioni per l'utente in `tools\LEGGIMI.txt` (finisce nel
-pacchetto).
+App per Windows che tiene in ordine le versioni dei progetti Siemens TIA Portal di ogni
+commessa PLC.
+
+Lavorando su un impianto si accumulano copie del progetto (`..._V0.68`, `..._V0.69`,
+`.rar`, backup) e diventa difficile ricordare quale versione e' sul PLC, su quale si sta
+lavorando e a che punto e' ogni modifica su ciascuna. TiaTracker legge le cartelle della
+commessa e lo mostra in un posto solo:
+
+- **Versioni e stati**: trova le versioni nelle cartelle, segna quella In lavoro, quelle
+  caricate su ogni PLC, le vecchie e le scartate; si accorge se una versione e' aperta in TIA.
+- **Snapshot da TIA**: con TIA Openness, in sola lettura, esporta blocchi, hardware, rete
+  e tabelle tag, dal TIA aperto o da una copia della cartella.
+- **Confronto e modifiche**: confronta due versioni blocco per blocco e incrocia le
+  differenze con il registro delle modifiche (cosa e' stato toccato, su quale versione,
+  se importato, compilato o salvato).
+- **Documenti**: Lista IP, Lista hardware, Lista IO, registro modifiche e piano attivita'
+  in DOCX, PDF e CSV; la Lista IP si allinea anche a una scansione PRONETA.
+- **Pianificazione**: attivita' e milestone su un Gantt, con una dashboard per commessa.
+
+Requisiti: Windows 10/11 a 64 bit; per gli snapshot TIA Portal V21 (o V18) con TIA
+Openness e l'utente nel gruppo locale "Siemens TIA Openness". Per compilare serve
+l'SDK .NET 10; i worker si compilano solo dove sono installate le DLL di Openness, che
+non sono incluse. Istruzioni per l'utente in `tools\LEGGIMI.txt` (finisce nel pacchetto).
 
 ## Struttura
 
@@ -73,3 +90,8 @@ caratteri: la copia di lavoro sta in `work\` o, se la cartella dati e' lunga, in
   iniziale e scansione automatica; F6 pianificazione con Gantt; F7 dashboard e
   impostazioni. Ogni fase verificata con i test e guidando l'app via UI Automation su
   una copia dei dati di una commessa reale.
+
+## Licenza
+
+[MIT](LICENSE). Siemens, SIMATIC e TIA Portal sono marchi di Siemens AG: TiaTracker non e'
+un prodotto Siemens e non e' affiliato a Siemens.
