@@ -172,7 +172,7 @@ public static class SnapshotService
                 return Fail(msg, snap.ExitCode);
             }
 
-            if (MessageBox.Show(msg + "\n\nRegistrare comunque lo snapshot parziale?", "Snapshot parziale",
+            if (Msg.Show(msg + "\n\nRegistrare comunque lo snapshot parziale?", "Snapshot parziale",
                     MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes)
             {
                 return Fail(msg);

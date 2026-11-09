@@ -506,7 +506,7 @@ public static class TaskEditing
         if (edited.Status == PlanStatus.Done && !wasDone && edited.Kind == PlanKind.Task && edited.VersionId != null && changeIds.Count == 0)
         {
             string label = versions.FirstOrDefault(v => v.Id == edited.VersionId)?.Label ?? "";
-            if (MessageBox.Show("\"" + edited.Title + "\" e' fatta su " + label + ".\n\nRegistrare la modifica nel registro delle modifiche?",
+            if (Msg.Show("\"" + edited.Title + "\" e' fatta su " + label + ".\n\nRegistrare la modifica nel registro delle modifiche?",
                     "Attivita' fatta", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) == MessageBoxResult.Yes)
             {
                 long? changeId = ChangeEditing.NewPrefilled(c, edited.VersionId, edited.Title, edited.Description);

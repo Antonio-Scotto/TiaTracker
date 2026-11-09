@@ -37,7 +37,7 @@ public partial class MainWindow : Window
         {
             string? text = JobRunner.CurrentText;
             e.Cancel = true;
-            if (MessageBox.Show(this,
+            if (Msg.Show(this,
                     "C'e' un lavoro in corso" + (string.IsNullOrEmpty(text) ? "" : ":\n" + text) +
                     "\n\nAnnullarlo e chiudere TiaTracker?",
                     "Chiudi TiaTracker", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes)

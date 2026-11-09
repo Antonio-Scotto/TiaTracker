@@ -22,13 +22,30 @@ Requisiti sul PC
 
 Installazione
 -------------
-1. Prima di estrarre lo zip: tasto destro > Proprieta' > "Sblocca". Senza,
-   Windows (SmartScreen) puo' bloccare i worker e TIA rifiuta l'accesso.
-2. Estrarre la cartella TiaTracker dove si vuole (non serve installare).
-   La sottocartella worker\ deve restare accanto a TiaTracker.exe.
-3. Avviare TiaTracker.exe. Se manca qualcosa (worker, DLL di TIA, gruppo
-   Openness) compare una barra rossa: "Diagnostica" (in alto a destra) dice
-   cosa manca e dove e' stato cercato.
+Due pacchetti, stessa app:
+
+- Installer TiaTracker_<versione>_setup.msi: installa in Programmi\TiaTracker
+  (chiede i permessi di amministratore) e mette TiaTracker nel menu Start.
+  Una versione nuova sostituisce la vecchia; "Disinstalla" da Impostazioni >
+  App. I dati restano in %LOCALAPPDATA%\TiaTracker e non vengono toccati.
+- Portatile TiaTracker_<versione>_portatile.zip: non si installa.
+  1. Prima di estrarre lo zip: tasto destro > Proprieta' > "Sblocca". Senza,
+     Windows (SmartScreen) puo' bloccare i worker e TIA rifiuta l'accesso.
+  2. Estrarre la cartella TiaTracker dove si vuole (anche su una chiavetta).
+     La sottocartella worker\ deve restare accanto a TiaTracker.exe.
+  3. Contiene portable.flag: i dati stanno nella cartella data\ accanto
+     all'exe e si spostano con lei.
+
+Avviare TiaTracker. Al primo avvio si apre la guida rapida (poi pulsante
+"Guida" o F1). Se manca qualcosa (worker, DLL di TIA, gruppo Openness)
+compare una barra rossa: "Diagnostica" (in alto a destra) dice cosa manca e
+dove e' stato cercato.
+
+Lingua
+------
+Italiano o inglese, dal menu in alto a destra; vale dal riavvio (TiaTracker
+propone di riavviarsi). La prima volta segue la lingua di Windows. I
+documenti generati (DOCX, PDF, CSV) restano in italiano.
 
 Nuova commessa
 --------------

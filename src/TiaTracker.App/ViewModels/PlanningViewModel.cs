@@ -621,7 +621,7 @@ public sealed partial class PlanningViewModel : ObservableObject
         }
 
         string what = row.Task.IsPhase ? "la fase \"" + row.Title + "\" (le sue attivita' restano, un livello sopra)" : "\"" + row.Title + "\"";
-        if (MessageBox.Show("Eliminare " + what + "?\nLo storico conserva il titolo e i cambiamenti.", "Elimina",
+        if (Msg.Show("Eliminare " + what + "?\nLo storico conserva il titolo e i cambiamenti.", "Elimina",
                 MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes)
         {
             return;

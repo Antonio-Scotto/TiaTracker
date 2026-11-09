@@ -1,4 +1,6 @@
-# Pubblica TiaTracker in dist\TiaTracker e ne fa uno zip da copiare su un altro PC.
+# Pubblica TiaTracker in dist\TiaTracker e ne fa i pacchetti per un altro PC:
+#   dist\TiaTracker_<versione>_setup.msi      installer (Programmi, menu Start)
+#   dist\TiaTracker_<versione>_portatile.zip  versione portatile (dati accanto all'exe)
 #
 #   app      net10 self-contained win-x64, ReadyToRun, niente single-file ne' trimming
 #            (WPF e la riflessione di System.Text.Json non lo sopportano)
@@ -6,10 +8,11 @@
 #
 # Le DLL Siemens non si ridistribuiscono: i worker le trovano sul PC di destinazione.
 #
-#   powershell -ExecutionPolicy Bypass -File tools\publish.ps1 [-NoZip]
+#   powershell -ExecutionPolicy Bypass -File tools\publish.ps1 [-NoZip] [-NoInstaller]
 
 param(
-    [switch]$NoZip
+    [switch]$NoZip,
+    [switch]$NoInstaller
 )
 
 $ErrorActionPreference = 'Stop'
@@ -68,8 +71,29 @@ $version = (Get-Item (Join-Path $dist 'TiaTracker.dll')).VersionInfo.ProductVers
 Write-Host "== TiaTracker $version in $dist"
 
 if (-not $NoZip) {
-    $zip = Join-Path $root ("dist\TiaTracker_{0}_{1}.zip" -f $version, (Get-Date -Format 'yyyyMMdd'))
+    # Versione portatile: con portable.flag accanto all'exe i dati stanno in data\ nella stessa
+    # cartella (si porta su una chiavetta o su un altro PC cosi' com'e').
+    $stage = Join-Path $root 'dist\portatile'
+    if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
+    New-Item -ItemType Directory $stage | Out-Null
+    Copy-Item $dist (Join-Path $stage 'TiaTracker') -Recurse
+    Set-Content (Join-Path $stage 'TiaTracker\portable.flag') 'Versione portatile: i dati stanno nella cartella data accanto a TiaTracker.exe.' -Encoding utf8
+    $zip = Join-Path $root ("dist\TiaTracker_{0}_portatile.zip" -f $version)
     if (Test-Path $zip) { Remove-Item $zip }
-    Compress-Archive -Path $dist -DestinationPath $zip -CompressionLevel Optimal
-    Write-Host "== Zip: $zip"
+    Compress-Archive -Path (Join-Path $stage 'TiaTracker') -DestinationPath $zip -CompressionLevel Optimal
+    Remove-Item $stage -Recurse -Force
+    Write-Host "== Portatile: $zip"
+}
+
+if (-not $NoInstaller) {
+    # Installer MSI (WiX 5, scaricato da NuGet al primo build): Programmi\TiaTracker + menu Start.
+    $msiOut = Join-Path $root 'dist\installer'
+    & (Join-Path $root 'installer\make-files.ps1') -Dist $dist
+    dotnet build (Join-Path $root 'installer\TiaTracker.Installer.wixproj') -c Release -nologo `
+        -p:ProductVersion=$version -o $msiOut
+    if ($LASTEXITCODE -ne 0) { throw 'build dell''installer fallito' }
+    $msi = Join-Path $root ("dist\TiaTracker_{0}_setup.msi" -f $version)
+    Move-Item (Join-Path $msiOut 'TiaTracker_setup.msi') $msi -Force
+    Remove-Item $msiOut -Recurse -Force
+    Write-Host "== Installer: $msi"
 }

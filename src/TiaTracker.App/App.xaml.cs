@@ -11,6 +11,9 @@ namespace TiaTracker.App;
 
 public partial class App : Application
 {
+    /// <summary>Riavvio chiesto dal cambio lingua: il nuovo processo parte in OnExit.</summary>
+    public static bool RestartOnExit { get; set; }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -31,17 +34,25 @@ public partial class App : Application
         catch (Exception ex)
         {
             Log.Error("Avvio fallito", ex);
-            MessageBox.Show("Impossibile aprire l'archivio in " + DataPaths.Root + ":\n\n" + ex.Message,
+            Msg.Show("Impossibile aprire l'archivio in " + DataPaths.Root + ":\n\n" + ex.Message,
                 "TiaTracker", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
             return;
         }
+
+        Loc.Start(Loc.Resolve(AppServices.Settings.Language));
 
         MainViewModel vm = new();
         MainWindow window = new() { DataContext = vm };
         MainWindow = window;
         window.Show();
         vm.Load();
+        if (!AppServices.Settings.GuideShown)
+        {
+            AppServices.Settings.GuideShown = true;
+            AppServices.SaveSettings();
+            GuideWindow.ShowSingle();
+        }
         CleanUpLater(vm).Forget("Pulizia automatica");
     }
 
@@ -59,7 +70,13 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         Log.Info("Chiusura");
+        Loc.WriteMissing();
         AppServices.Stop();
+        if (RestartOnExit && Environment.ProcessPath is { } exe)
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe) { UseShellExecute = false });
+        }
+
         base.OnExit(e);
     }
 
@@ -122,7 +139,7 @@ public partial class App : Application
     private static void OnUnhandled(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         Log.Error("Eccezione non gestita", e.Exception);
-        MessageBox.Show(e.Exception.Message, "TiaTracker - errore", MessageBoxButton.OK, MessageBoxImage.Error);
+        Msg.Show(e.Exception.Message, "TiaTracker - errore", MessageBoxButton.OK, MessageBoxImage.Error);
         e.Handled = true;
     }
 }

@@ -1,3 +1,4 @@
+using TiaTracker.App.Services;
 using System.Globalization;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -88,7 +89,7 @@ public partial class LoadedWindow : Window
     {
         if (DateBox.SelectedDate == null)
         {
-            MessageBox.Show(this, "Indicare la data.", Title);
+            Msg.Show(this, "Indicare la data.", Title);
             return;
         }
 
@@ -96,7 +97,7 @@ public partial class LoadedWindow : Window
         if (!string.IsNullOrWhiteSpace(TimeBox.Text) &&
             !TimeSpan.TryParseExact(TimeBox.Text.Trim(), new[] { @"h\:mm", @"hh\:mm", @"h\.mm", @"hh\.mm" }, CultureInfo.InvariantCulture, out time))
         {
-            MessageBox.Show(this, "Ora non valida (hh:mm).", Title);
+            Msg.Show(this, "Ora non valida (hh:mm).", Title);
             return;
         }
 
@@ -108,7 +109,7 @@ public partial class LoadedWindow : Window
 
         if (plcs.Count == 0 && _plcs.Count > 0)
         {
-            MessageBox.Show(this, "Scegliere almeno un PLC (o scriverne il nome in \"Altro PLC\").", Title);
+            Msg.Show(this, "Scegliere almeno un PLC (o scriverne il nome in \"Altro PLC\").", Title);
             return;
         }
 

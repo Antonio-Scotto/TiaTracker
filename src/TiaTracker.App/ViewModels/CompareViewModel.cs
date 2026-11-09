@@ -557,7 +557,7 @@ public sealed partial class CompareViewModel : ObservableObject
         string how = open
             ? "La versione e' aperta in TIA: lo snapshot si fa dal TIA aperto (attach), incluse le modifiche non salvate."
             : "La versione e' chiusa: lo snapshot si fa su una copia, aperta da TIA senza interfaccia.";
-        if (MessageBox.Show(how + "\n\nProcedere?", "Nuovo snapshot e confronta", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+        if (Msg.Show(how + "\n\nProcedere?", "Nuovo snapshot e confronta", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
         {
             return;
         }

@@ -268,7 +268,7 @@ public sealed partial class SnapshotsViewModel : ObservableObject
             return;
         }
 
-        if (MessageBox.Show("Eliminare lo snapshot del " + Selected.When + " (" + Selected.Plc + ")?\nI confronti che lo usano vengono eliminati.",
+        if (Msg.Show("Eliminare lo snapshot del " + Selected.When + " (" + Selected.Plc + ")?\nI confronti che lo usano vengono eliminati.",
                 "Elimina snapshot", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes)
         {
             return;

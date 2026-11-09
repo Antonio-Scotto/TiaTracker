@@ -21,6 +21,8 @@
   <ItemGroup>
     <Resource Include="Assets\TiaTracker.ico" />
     <Resource Include="Assets\TiaTracker.png" />
+    <!-- Dizionario dell'interfaccia in inglese (chiave = testo italiano), vedi Services\Loc.cs. -->
+    <Resource Include="Assets\Lang\en.json" />
   </ItemGroup>
 
 

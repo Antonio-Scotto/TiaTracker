@@ -71,7 +71,7 @@ public sealed class VersionActions
         bool endLoads = false;
         if (Node.Status.OnPlc && VersionStates.IsRetired(state))
         {
-            MessageBoxResult answer = MessageBox.Show(
+            MessageBoxResult answer = Msg.Show(
                 Version.Label + " risulta ancora sul PLC (" + Node.Status.LoadsText + ").\n\nTogliere anche il carico dal PLC?\n" +
                 "Si' = non e' piu' sul PLC.   No = resta segnata sul PLC.",
                 VersionStates.Italian(state), MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.No);
@@ -181,7 +181,7 @@ public sealed class VersionActions
             return;
         }
 
-        if (MessageBox.Show(Version.Label + " non e' piu' sul PLC (" + Node.Status.LoadsText + ")?\nLo stato resta " +
+        if (Msg.Show(Version.Label + " non e' piu' sul PLC (" + Node.Status.LoadsText + ")?\nLo stato resta " +
                             (Node.Status.ChipText.Length > 0 ? Node.Status.ChipText : "invariato") + ".",
                 "Togli dal PLC", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
         {
@@ -505,7 +505,7 @@ public sealed class VersionActions
         string question = recycle
             ? "Spostare nel Cestino la cartella\n" + folder + "?"
             : "La cartella e' su un'unita' di rete: NON va nel Cestino, l'eliminazione e' DEFINITIVA.\n\nEliminare per sempre\n" + folder + "?";
-        if (MessageBox.Show(
+        if (Msg.Show(
                 question + archives +
                 "\nIn TiaTracker la versione resta con modifiche e storia, segnata come mancante." + warning,
                 "Elimina versione " + Version.Label, MessageBoxButton.YesNo,
@@ -556,7 +556,7 @@ public sealed class VersionActions
         }
 
         if (IsOpenInTia &&
-            MessageBox.Show("La versione e' aperta in TIA: si archivia l'ultimo salvataggio, le modifiche non salvate restano fuori.\n\nProcedere?",
+            Msg.Show("La versione e' aperta in TIA: si archivia l'ultimo salvataggio, le modifiche non salvate restano fuori.\n\nProcedere?",
                 "Backup .rar", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
         {
             return;

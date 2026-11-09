@@ -249,6 +249,45 @@ public sealed partial class MainViewModel : ObservableObject
         CheckWorkers();
     }
 
+    [RelayCommand]
+    private static void OpenGuide() => GuideWindow.ShowSingle();
+
+    /// <summary>Lingue dell'interfaccia; i nomi restano nella propria lingua.</summary>
+    public IReadOnlyList<LanguageOption> Languages { get; } = new[]
+    {
+        new LanguageOption(Loc.Italian, "Italiano"),
+        new LanguageOption(Loc.English, "English"),
+    };
+
+    public LanguageOption SelectedLanguage
+    {
+        get => Languages.First(l => l.Code == Loc.Language);
+        set
+        {
+            if (value == null || value.Code == Loc.Language || value.Code == AppServices.Settings.Language)
+            {
+                return;
+            }
+
+            AppServices.Settings.Language = value.Code;
+            AppServices.SaveSettings();
+            bool english = value.Code == Loc.English;
+            MessageBoxResult answer = MessageBox.Show(
+                english ? "The language changes after a restart. Restart TiaTracker now?" : "La lingua cambia al riavvio. Riavviare TiaTracker adesso?",
+                "TiaTracker", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (answer == MessageBoxResult.Yes && Application.Current.MainWindow is { } window)
+            {
+                // Il nuovo processo parte da OnExit, a DB chiuso; se la chiusura viene annullata non riparte niente.
+                App.RestartOnExit = true;
+                window.Close();
+                if (window.IsVisible)
+                {
+                    App.RestartOnExit = false;
+                }
+            }
+        }
+    }
+
     partial void OnSelectedNodeChanged(object? value)
     {
         Detail = value switch
@@ -503,3 +542,5 @@ public sealed partial class JobState : ObservableObject
     [RelayCommand]
     private void Cancel() => CancelAction?.Invoke();
 }
+
+public sealed record LanguageOption(string Code, string Name);

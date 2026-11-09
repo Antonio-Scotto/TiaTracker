@@ -203,7 +203,7 @@ public sealed partial class IpTableViewModel : ObservableObject
             return;
         }
 
-        if (MessageBox.Show("Togliere le " + missing.Count + " righe che non ci sono piu' in TIA?", "Lista IP",
+        if (Msg.Show("Togliere le " + missing.Count + " righe che non ci sono piu' in TIA?", "Lista IP",
                 MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
         {
             return;
@@ -515,7 +515,7 @@ public sealed partial class IpTableViewModel : ObservableObject
         bool replace = false;
         if (Rows.Count > 0)
         {
-            MessageBoxResult r = MessageBox.Show(
+            MessageBoxResult r = Msg.Show(
                 devices.Count + " righe " + what + ".\n\nSi = aggiungere in fondo\nNo = sostituire la tabella attuale",
                 "Layout IP", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
             if (r == MessageBoxResult.Cancel)

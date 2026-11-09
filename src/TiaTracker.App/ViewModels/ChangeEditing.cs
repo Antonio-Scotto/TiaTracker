@@ -107,7 +107,7 @@ public static class ChangeEditing
 
     public static bool ConfirmDelete(Change change)
     {
-        MessageBoxResult r = MessageBox.Show(
+        MessageBoxResult r = Msg.Show(
             "Eliminare la modifica \"" + change.Title + "\" con tutti i suoi stati e la sua storia?\nL'operazione non si annulla.",
             "Elimina modifica", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
         if (r != MessageBoxResult.Yes)

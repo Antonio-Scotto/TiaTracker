@@ -228,7 +228,7 @@ public sealed partial class VersionDetailViewModel : ObservableObject
             return;
         }
 
-        if (MessageBox.Show("Togliere \"" + row.Change.Title + "\" da " + Version.Label + "?\nLa modifica resta nelle altre versioni.",
+        if (Msg.Show("Togliere \"" + row.Change.Title + "\" da " + Version.Label + "?\nLa modifica resta nelle altre versioni.",
                 "Togli dalla versione", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
         {
             AppServices.Changes.RemoveFromVersion(row.Change.Id, Version.Id);

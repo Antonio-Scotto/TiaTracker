@@ -11,6 +11,7 @@
     <Window.InputBindings>
         <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewCommessaCommand}" />
         <KeyBinding Key="F5" Command="{Binding ScanCommand}" />
+        <KeyBinding Key="F1" Command="{Binding OpenGuideCommand}" />
     </Window.InputBindings>
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:CommessaDetailViewModel}">
@@ -143,6 +144,11 @@
                         <TextBlock Text="Diagnostica" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
+                <Button DockPanel.Dock="Right" Content="Guida" Command="{Binding OpenGuideCommand}" Margin="8,0,0,0" Style="{StaticResource ToolbarButton}"
+                        ui:Ui.Glyph="{StaticResource Icon.Info}" ToolTip="Guida rapida (F1)" />
+                <ComboBox DockPanel.Dock="Right" ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
+                          DisplayMemberPath="Name" VerticalAlignment="Center" Margin="8,0,0,0" MinWidth="110"
+                          AutomationProperties.Name="Lingua" ToolTip="Lingua dell'interfaccia (vale dal riavvio)" />
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" ToolTip="{Binding DataInfo}" Margin="0,0,4,0">
                     <TextBlock Text="{StaticResource Icon.Database}" Style="{StaticResource IconText}" FontSize="12" Foreground="{StaticResource SubtleBrush}"
                                Margin="0,0,6,0" />

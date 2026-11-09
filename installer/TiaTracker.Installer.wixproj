@@ -1,0 +1,24 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+  <!--
+    Installer MSI di TiaTracker (WiX 5, licenza MS-RL). Impacchetta dist\TiaTracker prodotta
+    da tools\publish.ps1, che lo compila alla fine: non sta nella soluzione, cosi' la build
+    normale e la CI non scaricano WiX.
+
+      powershell -File installer\make-files.ps1 -Dist dist\TiaTracker
+      dotnet build installer\TiaTracker.Installer.wixproj -c Release -p:ProductVersion=0.1.0
+  -->
+  <PropertyGroup>
+    <OutputName>TiaTracker_setup</OutputName>
+    <Platform>x64</Platform>
+    <InstallerPlatform>x64</InstallerPlatform>
+    <ProductVersion Condition="'$(ProductVersion)' == ''">0.1.0</ProductVersion>
+    <DefineConstants>ProductVersion=$(ProductVersion)</DefineConstants>
+    <!-- ICE: avvisi noti sui file del runtime .NET (versioni dei file), non bloccanti. -->
+    <SuppressIces>ICE60;ICE61</SuppressIces>
+    <Cultures>it-IT</Cultures>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="obj\Files.wxs" />
+    <PackageReference Include="WixToolset.UI.wixext" />
+  </ItemGroup>
+</Project>

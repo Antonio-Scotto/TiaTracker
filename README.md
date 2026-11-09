@@ -20,6 +20,11 @@ commessa e lo mostra in un posto solo:
 - **Documenti**: Lista IP, Lista hardware, Lista IO, registro modifiche e piano attivita'
   in DOCX, PDF e CSV; la Lista IP si allinea anche a una scansione PRONETA.
 - **Pianificazione**: attivita' e milestone su un Gantt, con una dashboard per commessa.
+- **Guida e lingua**: guida rapida nell'app (F1) e interfaccia in italiano o inglese.
+
+Si installa con `TiaTracker_<versione>_setup.msi` (Programmi, menu Start) oppure si usa
+la versione portatile `TiaTracker_<versione>_portatile.zip` (si estrae e si avvia, i dati
+restano nella cartella `data` accanto all'exe).
 
 Requisiti: Windows 10/11 a 64 bit; per gli snapshot TIA Portal V21 (o V18) con TIA
 Openness e l'utente nel gruppo locale "Siemens TIA Openness". Per compilare serve
@@ -51,7 +56,7 @@ volta (`JobRunner`).
 ```
 dotnet build TiaTracker.slnx
 dotnet test tests\TiaTracker.Core.Tests\TiaTracker.Core.Tests.csproj
-powershell -ExecutionPolicy Bypass -File tools\publish.ps1 [-NoZip]
+powershell -ExecutionPolicy Bypass -File tools\publish.ps1 [-NoZip] [-NoInstaller]
 python tools\make-icon.py [cartella anteprima]
 ```
 
@@ -60,7 +65,12 @@ finestre) e `TiaTracker.png` (logo nella barra dell'app).
 
 `tools\publish.cmd` fa lo stesso con un doppio clic e lascia la finestra aperta sull'esito.
 `publish.ps1` produce `dist\TiaTracker` (app self-contained + `worker\v21`, `worker\v18`)
-e lo zip; si ferma se manca il worker V21 e prova `hello`. Ogni build dell'app copia i
+e i pacchetti: `TiaTracker_<ver>_portatile.zip` (con `portable.flag`) e
+`TiaTracker_<ver>_setup.msi` (WiX 5 in `installer\`, scaricato da NuGet al primo build; non
+sta nella soluzione, quindi la CI non lo compila); si ferma se manca il worker V21 e prova
+`hello`. Testi dell'interfaccia: scritti in italiano, in inglese li traduce `Services\Loc.cs`
+con `Assets\Lang\en.json` (chiave = testo italiano); `TIATRACKER_LOC_MISSING=<file>` scrive
+alla chiusura i testi visti senza traduzione. Ogni build dell'app copia i
 worker in `bin\<cfg>\net10.0-windows\worker\vNN` (se le DLL Openness ci sono); in
 sviluppo l'app li cerca anche risalendo fino a `src\TiaTracker.Worker.Vnn\bin\...`
 (vedi Diagnostica). Per non toccare l'archivio vero: `TIATRACKER_DATA=<cartella di prova>`

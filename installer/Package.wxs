@@ -1,0 +1,47 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  <!--
+    Installazione per tutto il PC in Programmi\TiaTracker, collegamento nel menu Start.
+    I dati (archivio, impostazioni, log) restano per utente in %LOCALAPPDATA%\TiaTracker:
+    la disinstallazione non li tocca. UpgradeCode fisso: una versione nuova sostituisce la vecchia.
+  -->
+  <Package Name="TiaTracker" Manufacturer="Antonio Scotto" Version="$(ProductVersion)"
+           UpgradeCode="6F1E7A52-2B9C-4D7E-9A0B-3C5D1E2F4A61" Scope="perMachine" Language="1040" Codepage="1252">
+    <MajorUpgrade DowngradeErrorMessage="E' gia' installata una versione piu' recente di TiaTracker." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <Icon Id="TiaTracker.ico" SourceFile="..\src\TiaTracker.App\Assets\TiaTracker.ico" />
+    <Property Id="ARPPRODUCTICON" Value="TiaTracker.ico" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/Antonio-Scotto/TiaTracker" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="TiaTracker" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder" />
+
+    <!-- AppFiles: obj\Files.wxs, generato da make-files.ps1 con l'elenco di dist\TiaTracker. -->
+
+    <Component Id="StartMenuShortcut" Directory="ProgramMenuFolder" Guid="8B3C2D41-5E6F-4A7B-8C9D-0E1F2A3B4C5D">
+      <Shortcut Id="TiaTrackerShortcut" Name="TiaTracker" Description="Versioni e progetti TIA Portal"
+                Target="[INSTALLFOLDER]TiaTracker.exe" WorkingDirectory="INSTALLFOLDER" Icon="TiaTracker.ico" />
+      <RegistryValue Root="HKCU" Key="Software\TiaTracker" Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <Feature Id="Main" Title="TiaTracker" Level="1">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentRef Id="StartMenuShortcut" />
+    </Feature>
+
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+    <ui:WixUI Id="WixUI_Minimal" />
+
+    <!-- Al termine si puo' avviare l'app. -->
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Avvia TiaTracker" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
+    <CustomAction Id="LaunchApp" Directory="INSTALLFOLDER" ExeCommand="[INSTALLFOLDER]TiaTracker.exe" Return="asyncNoWait" Impersonate="yes" />
+    <UI>
+      <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchApp"
+               Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed" />
+    </UI>
+  </Package>
+</Wix>
