@@ -1,0 +1,7 @@
+# Nel repository a capo LF; sul disco come vuole git (autocrlf). Script di Windows sempre CRLF:
+# un .cmd con a capo LF puo' saltare righe ed etichette.
+* text=auto
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.ico binary
+*.png binary

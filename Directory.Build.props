@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Version>0.1.0</Version>
+    <Product>TiaTracker</Product>
+    <Deterministic>true</Deterministic>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <!--
+    Cartelle Openness di TIA: le leggono i worker (riferimenti alle DLL) e l'app
+    (compila i worker e li copia in worker\vNN solo se le DLL ci sono).
+    Override: dotnet build -p:TiaPublicApi=... -p:TiaPublicApiV18=...
+  -->
+  <PropertyGroup>
+    <TiaPublicApi Condition="'$(TiaPublicApi)' == ''">C:\Program Files\Siemens\Automation\Portal V21\PublicAPI\V21\net48</TiaPublicApi>
+    <TiaPublicApiV18 Condition="'$(TiaPublicApiV18)' == ''">C:\Program Files\Siemens\Automation\Portal V18\PublicAPI\V18</TiaPublicApiV18>
+  </PropertyGroup>
+</Project>

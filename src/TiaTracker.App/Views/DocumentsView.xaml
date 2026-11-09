@@ -1,0 +1,231 @@
+<UserControl x:Class="TiaTracker.App.Views.DocumentsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:TiaTracker.App.Controls"
+             IsVisibleChanged="OnVisibleChanged">
+    <UserControl.Resources>
+        <!-- Basati in codice sugli stili del tema (Fluent li assegna da DataGrid.RowStyle/CellStyle). -->
+        <Style x:Key="PreviewRowStyle" TargetType="DataGridRow">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsGroup}" Value="True">
+                    <Setter Property="Focusable" Value="False" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="DataGridRow">
+                                <Border Background="{StaticResource SubtleFillBrush}" BorderBrush="{StaticResource GridLineBrush}"
+                                        BorderThickness="0,0,0,1" Padding="8,6" MinHeight="30">
+                                    <TextBlock Text="{Binding [0]}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" Foreground="{StaticResource TextBrush}" />
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="PreviewCellStyle" TargetType="DataGridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsMuted}" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsManual}" Value="True">
+                    <Setter Property="FontStyle" Value="Italic" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    <DockPanel>
+        <!-- Versione e fonte dei dati, azioni su tutti i documenti -->
+        <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Margin="0,0,0,10" Padding="14,10">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
+                    <Button Content="Aggiorna da TIA" Command="{Binding RefreshFromTiaCommand}" Margin="0,0,6,0" ui:Ui.Glyph="{StaticResource Icon.Scan}"
+                            ToolTip="Legge hardware, rete e tag della versione scelta (pochi secondi se e' aperta in TIA, 1-2 minuti dalla cartella)" />
+                    <Button Content="Genera tutti" Command="{Binding GenerateAllCommand}" Style="{StaticResource AccentButton}" Margin="0,0,6,0"
+                            ui:Ui.Glyph="{StaticResource Icon.Document}"
+                            ToolTip="Lista IP, Lista hardware, Lista IO e registro in DOCX, PDF e CSV nella cartella TiaTrackerOut\Elenchi" />
+                    <Button Content="Apri Elenchi" Command="{Binding OpenListsFolderCommand}" ui:Ui.Glyph="{StaticResource Icon.Folder}"
+                            ToolTip="{Binding ListsFolder}" />
+                </StackPanel>
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Versione" Style="{StaticResource FieldLabel}" />
+                    <ComboBox Grid.Column="1" ItemsSource="{Binding Versions}" SelectedItem="{Binding SelectedVersion}" MinWidth="250" Margin="0,0,12,0"
+                              ToolTip="I documenti usano l'ultimo export da TIA di questa versione. Quella di riferimento scrive in Elenchi\, le altre in Elenchi\&lt;versione&gt;\">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Text}" />
+                                    <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="{StaticResource MutedBrush}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <StackPanel Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Center">
+                        <ContentControl Content="{Binding SourceChip}" ContentTemplate="{StaticResource ChipTemplate}" HorizontalAlignment="Left"
+                                        Focusable="False" />
+                        <TextBlock Text="{Binding SourceText}" Foreground="{StaticResource MutedBrush}" FontSize="11.5" Margin="0,3,0,0"
+                                   TextTrimming="CharacterEllipsis" ToolTip="{Binding SourceText}" />
+                    </StackPanel>
+                </Grid>
+            </DockPanel>
+        </Border>
+
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding Status}" Foreground="{StaticResource MutedBrush}" Margin="0,6,0,0" />
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="330" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Documenti generati e file liberi della commessa -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" MinHeight="160" />
+                </Grid.RowDefinitions>
+
+                <ListBox ItemsSource="{Binding Kinds}" SelectedItem="{Binding SelectedKind}" Background="Transparent" BorderThickness="0" Padding="0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" AutomationProperties.Name="Documenti">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                            <Setter Property="Padding" Value="12,8" />
+                            <Setter Property="Margin" Value="0,0,0,6" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="Background" Value="{StaticResource CardBrush}" />
+                            <Setter Property="AutomationProperties.Name" Value="{Binding Title}" />
+                            <Setter Property="ToolTip" Value="{Binding Description}" />
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Glyph}" Style="{StaticResource IconText}" FontSize="18" Foreground="{StaticResource AccentBrush}"
+                                           VerticalAlignment="Top" Margin="0,2,12,0" />
+                                <StackPanel Grid.Column="1">
+                                    <DockPanel>
+                                        <ContentControl DockPanel.Dock="Right" Content="{Binding Freshness}" ContentTemplate="{StaticResource ChipTemplate}"
+                                                        Focusable="False" />
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" />
+                                    </DockPanel>
+                                    <TextBlock FontSize="11.5" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0">
+                                        <Run Text="{Binding Count, Mode=OneWay}" />
+                                        <Run Text=" · " />
+                                        <Run Text="{Binding LastText, Mode=OneWay}" />
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0,4,0,0" Padding="12,10" AllowDrop="True" Background="{StaticResource CardBrush}"
+                        DragOver="OnFilesDragOver" Drop="OnFilesDrop">
+                    <DockPanel>
+                        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                <Button Command="{Binding AddFilesCommand}" Style="{StaticResource IconButton}" ToolTip="Copia file nella cartella Documenti"
+                                        AutomationProperties.Name="Aggiungi file">
+                                    <TextBlock Text="{StaticResource Icon.Add}" Style="{StaticResource IconText}" />
+                                </Button>
+                                <Button Command="{Binding LoadFilesCommand}" Style="{StaticResource IconButton}" ToolTip="Aggiorna l'elenco"
+                                        AutomationProperties.Name="Aggiorna file">
+                                    <TextBlock Text="{StaticResource Icon.History}" Style="{StaticResource IconText}" />
+                                </Button>
+                                <Button Command="{Binding OpenDocumentsFolderCommand}" Style="{StaticResource IconButton}" ToolTip="Apri la cartella Documenti"
+                                        AutomationProperties.Name="Apri cartella documenti">
+                                    <TextBlock Text="{StaticResource Icon.Folder}" Style="{StaticResource IconText}" />
+                                </Button>
+                            </StackPanel>
+                            <TextBlock Text="FILE DELLA COMMESSA" Style="{StaticResource SectionTitle}" Margin="0,4,0,0"
+                                       ToolTip="Cartella TiaTrackerOut\Documenti: offerte, schemi, manuali... TiaTracker non la modifica" />
+                        </DockPanel>
+                        <TextBlock DockPanel.Dock="Bottom" Text="{Binding FilesText}" Style="{StaticResource MutedText}" FontSize="11.5" Margin="0,6,0,0" />
+                        <ListBox ItemsSource="{Binding Files}" SelectedItem="{Binding SelectedFile}" Background="Transparent" BorderThickness="0"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" MouseDoubleClick="OnFileDoubleClick"
+                                 AutomationProperties.Name="File della commessa">
+                            <ListBox.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Apri" Command="{Binding OpenCommessaFileCommand}" />
+                                    <MenuItem Header="Mostra in Esplora risorse" Command="{Binding ShowCommessaFileCommand}" />
+                                </ContextMenu>
+                            </ListBox.ContextMenu>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel ToolTip="{Binding Path}">
+                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock FontSize="11" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis">
+                                            <Run Text="{Binding Folder, Mode=OneWay}" />
+                                            <Run Text="{Binding Info, Mode=OneWay}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DockPanel>
+                </Border>
+            </Grid>
+
+            <!-- Anteprima del documento scelto -->
+            <Border Grid.Column="2" Style="{StaticResource Card}" Padding="14,12">
+                <DockPanel>
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
+                            <Button Content="DOCX" Command="{Binding ExportCommand}" CommandParameter="docx" Margin="0,0,6,0" ui:Ui.Glyph="{StaticResource Icon.Document}"
+                                    ToolTip="Word, modificabile" />
+                            <Button Content="PDF" Command="{Binding ExportCommand}" CommandParameter="pdf" Margin="0,0,6,0" ui:Ui.Glyph="{StaticResource Icon.Pdf}" />
+                            <Button Content="CSV" Command="{Binding ExportCommand}" CommandParameter="csv" Margin="0,0,6,0" ui:Ui.Glyph="{StaticResource Icon.List}"
+                                    ToolTip="Per Excel: separatore punto e virgola, gruppi nella prima colonna" />
+                            <Button Content="Tutti i formati" Command="{Binding ExportCommand}" CommandParameter="all" Style="{StaticResource AccentButton}" Margin="0,0,6,0"
+                                    ui:Ui.Glyph="{StaticResource Icon.Export}" />
+                            <Button Content="Apri" Command="{Binding OpenLastCommand}" ui:Ui.Glyph="{StaticResource Icon.Open}"
+                                    ToolTip="Apre l'ultimo file generato (PDF se c'e')" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="{Binding PreviewTitle}" FontSize="17" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding PreviewHint}" Style="{StaticResource MutedText}" FontSize="12" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Visibility="{Binding CanEditRows, Converter={StaticResource BoolToVis}}">
+                            <Button Content="Aggiungi riga" Command="{Binding AddRowCommand}" Margin="6,0,0,0" ui:Ui.Glyph="{StaticResource Icon.Add}"
+                                    ToolTip="Una riga scritta a mano (es. alimentatore, dispositivo di terzi): resta a ogni rigenerazione" />
+                            <Button Content="Togli riga" Command="{Binding RemoveRowCommand}" Style="{StaticResource DangerButton}" Margin="6,0,0,0"
+                                    ui:Ui.Glyph="{StaticResource Icon.Delete}" ToolTip="Solo le righe aggiunte a mano" />
+                        </StackPanel>
+                        <TextBox Width="280" Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged, Delay=150}" HorizontalAlignment="Left"
+                                 ui:Ui.Placeholder="Cerca nell'anteprima" AutomationProperties.Name="Cerca nell'anteprima" />
+                        <TextBlock Text="{Binding PreviewCount}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" Margin="10,0,0,0" />
+                    </DockPanel>
+
+                    <ProgressBar DockPanel.Dock="Top" IsIndeterminate="True" Height="2" Margin="0,0,0,4"
+                                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
+
+                    <Grid>
+                        <DataGrid x:Name="Grid" ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedRow}" AutoGenerateColumns="False"
+                                  CanUserAddRows="False" CanUserDeleteRows="False" CanUserSortColumns="False" CanUserReorderColumns="False"
+                                  SelectionMode="Single" SelectionUnit="FullRow" BeginningEdit="OnBeginningEdit" EnableRowVirtualization="True"
+                                  VirtualizingPanel.IsVirtualizingWhenGrouping="True" VirtualizingPanel.ScrollUnit="Pixel"
+                                  AutomationProperties.Name="Anteprima del documento">
+                        </DataGrid>
+
+                        <ContentControl Style="{StaticResource EmptyState}" ui:Ui.Glyph="{StaticResource Icon.Document}" Tag="Nessun dato da mostrare"
+                                        Content="{Binding EmptyText}" Visibility="{Binding EmptyText, Converter={StaticResource NullToVis}}" />
+                    </Grid>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

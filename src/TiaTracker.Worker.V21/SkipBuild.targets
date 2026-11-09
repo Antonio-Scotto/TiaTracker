@@ -1,0 +1,7 @@
+<Project>
+  <!-- Importato solo se mancano le DLL Openness V21: sostituisce Build con un avviso. -->
+  <Target Name="Build">
+    <Message Importance="high" Text="Worker V21 saltato: Siemens.Engineering.Base.dll non trovato in '$(TiaPublicApi)'. Passare -p:TiaPublicApi=&lt;cartella net48&gt;." />
+  </Target>
+  <Target Name="Rebuild" DependsOnTargets="Build" />
+</Project>

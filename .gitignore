@@ -1,0 +1,22 @@
+bin/
+obj/
+dist/
+*.user
+.vs/
+TestResults/
+
+# Claude Code e strumenti locali: impostazioni, memoria e note restano su questo PC
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+graphify-out/
+
+# Dati dell'app e uscite generate (possono contenere dati delle commesse)
+*.db
+*.db-shm
+*.db-wal
+TiaTrackerOut/
+portable.flag
+
+# Test sui dati reali di una commessa (percorsi, nomi e IP del cliente): solo in locale
+tests/**/Locali/

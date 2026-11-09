@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TiaTracker.Contracts/TiaTracker.Contracts.csproj" />
+    <Project Path="src/TiaTracker.Core/TiaTracker.Core.csproj" />
+    <Project Path="src/TiaTracker.Data/TiaTracker.Data.csproj" />
+    <Project Path="src/TiaTracker.Export/TiaTracker.Export.csproj" />
+    <Project Path="src/TiaTracker.App/TiaTracker.App.csproj" />
+  </Folder>
+  <Folder Name="/worker/">
+    <Project Path="src/TiaTracker.Worker.V21/TiaTracker.Worker.V21.csproj" />
+    <Project Path="src/TiaTracker.Worker.V18/TiaTracker.Worker.V18.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TiaTracker.Core.Tests/TiaTracker.Core.Tests.csproj" />
+  </Folder>
+</Solution>
